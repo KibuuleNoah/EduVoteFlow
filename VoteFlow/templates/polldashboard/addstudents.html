@@ -1,0 +1,79 @@
+{% extends 'polldashboard/polldashboardbase.html' %}
+
+{% block viewer %}
+	 <form method="POST" method="/" class='elecstart mt-3' enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      {% if loaded %}
+      <center>
+         <h1 class="display-1">Add Students</h1>
+         {{form.students(class='btn btn-outline-info mr-3')}}
+         <!-- <span style="color:#0ab2c7">junkkkjk</span> -->
+         <!-- <span style="color:#0bc0de">junkkkjk</span> -->
+      <div class="text-warning m-3">
+        Please upload an excel file with the following fields in the sample table below
+        <b> Filed names must in snake casing</b>
+      </div>
+      <div class="d-flex justify-content-center overflow-auto">
+        <div style="max-width:40rem;">
+        <table class="table table-striped table-dark restable">
+          <thead>
+            <tr>
+              <th scope="col">student_name</th>
+              <th scope="col">grade</th>
+              <th scope="col">section</th>
+              <th scope="col">gender</th>
+              <th scope="col">house</th>
+              <th scope="col">roll_no</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for _ in range(3) %}
+            <tr>
+              <td>John Deo</td>
+              <td>11</td>
+              <td>A</td>
+              <td>F</td>
+              <td>RED</td>
+              <td>464</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      </div>
+  
+         {{form.submit(class='btn btn-outline-success mt-3')}}
+         </center>
+   </form>
+   {% else %}
+         <center>
+            <br><h1 class="display-1 text-success">Students Have Been Added!</h1><br>
+         </center>
+   {% endif %}
+   {% if flagged %}
+      <center style="margin-top:10rem">
+         <h1 class="display-4 mt-3 mb-3 text-warning">Flagged Usernames <sup class="text-secondary">({{flagged | length}})</sup></h1>
+         <a href="{{url_for('polls.edit_flagged_students', school_abbr=school.school_abbr, poll_id=poll.id)}}" class="btn btn-outline-danger" style="width: 40%;">Edit</a>
+      </center>
+   {% endif %}
+{% endblock viewer %}
+
+{% block style %}
+<style>
+   {% if flagged %}
+   .elecstart{
+      margin-top: 10%;
+   }
+   {% else %}
+   .elecstart{
+      margin-top: 21%;
+   }
+   {% endif %}
+   .count{
+      opacity: 0.4;
+   }
+</style>
+{% endblock style %}
+
+{% block scripts %}
+{% endblock scripts %}

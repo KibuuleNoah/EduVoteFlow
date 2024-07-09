@@ -1,0 +1,24 @@
+{% extends 'polldashboard/polldashboardbase.html' %}
+
+{% block viewer %}
+   {% if status == "Active" %}
+      <div class="elecstart">
+			<center>
+				<h1 class="display-1">Election is Active</h1>
+				<h5 class="text-info">Election Target: <a href="{{link}}">{{link}}</a></h5>
+				<br><br>
+				<a href="{{link}}" class="btn btn-muted x">Go to Student Login</a>
+			</center>
+		</div>
+   {% else %}
+      <form method="POST" method="/" class='elecstart'>
+         <center>
+         <h1 class="display-1">{{poll.poll_name}}</h1>
+         <a href="{{ url_for('polls.start_election', school_abbr=school.school_abbr, poll_id=poll.id) }}" class="btn btn-outline-info m-5">Start Election</a>
+         </center>
+      </form>
+   {% endif %}
+{% endblock viewer %}
+
+{% block scripts %}
+{% endblock scripts %}

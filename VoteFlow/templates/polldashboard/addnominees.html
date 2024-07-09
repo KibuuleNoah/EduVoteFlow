@@ -1,0 +1,57 @@
+{% extends 'polldashboard/polldashboardbase.html' %}
+
+{% block viewer %}
+   <form method="POST" method="/" class='elecstart' enctype="multipart/form-data">
+   {{ form.hidden_tag() }}
+   {% if loaded %}
+      <center>
+         <br><h1 class="display-1">Nominees Already Added!</h1><br>
+      </center>
+   {% else %}
+      <center>
+      <h1 class="display-1">Add Nominees</h1>
+      {{form.nominees(class='btn btn-outline-info m-1 x')}}
+      <div class="text-warning">
+        Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.
+      </div>  
+      <div class="d-flex justify-content-center overflow-auto">
+  <div style="max-width:40rem;">
+    <table class="table table-striped table-dark restable">
+      <thead>
+        <tr>
+          <th scope="col">full_name</th>
+          <th scope="col">post</th>
+          <th scope="col">slogan</th>
+          <th scope="col">gender</th>
+          <th scope="col">house</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for _ in range(3) %}
+        <tr>
+          <td>John Deo</td>
+          <td>HeadBoy</td>
+          <td>Now is the time</td>
+          <td>F</td>
+          <td>RED</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <hr>
+</div>
+
+
+      <h1 class="display-1">Add Logo Bundle</h1>
+      {{form.nominees_logo(class='btn btn-outline-info m-1 x')}}
+      <br><br><br>
+      {{form.submit(class='btn btn-outline-success x', style="width: 50%;")}}
+      </center>
+   {% endif %}
+   </form>
+ 
+{% endblock viewer %}
+
+{% block scripts %}
+{% endblock scripts %}
