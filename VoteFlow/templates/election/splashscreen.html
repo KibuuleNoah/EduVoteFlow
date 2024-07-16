@@ -1,32 +1,106 @@
-{% extends "layout.html" %}
-
-<!-- Main Body Code -->
-{% block content %}
-    <div class="logo">
-        <img src="{{url_for('static', filename='DataStore/SchoolLogo/') + school.school_abbr + ".svg"}}">
+<!-- <!doctype html> -->
+<!-- <html lang="en"> -->
+<!--   <head> -->
+<!--     <meta charset="UTF-8" /> -->
+<!--     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+<!--     <title>Election Splash Screen</title> -->
+<!--     <link -->
+<!--       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" -->
+<!--       rel="stylesheet" -->
+<!--     /> -->
+<!--     <link -->
+<!--       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" -->
+<!--       rel="stylesheet" -->
+<!--     /> -->
+<!--     <style> -->
+<!--       .splash-screen { -->
+<!--         height: 100vh; -->
+<!--         background: url("your-background-image.jpg") no-repeat center center; -->
+<!--         background-size: cover; -->
+<!--         display: flex; -->
+<!--         align-items: center; -->
+<!--         justify-content: center; -->
+<!--         color: white; -->
+<!--         text-align: center; -->
+<!--         position: relative; -->
+<!--       } -->
+<!--       .overlay { -->
+<!--         position: absolute; -->
+<!--         top: 0; -->
+<!--         left: 0; -->
+<!--         width: 100%; -->
+<!--         height: 100%; -->
+<!--         background: rgba(0, 0, 0, 0.5); -->
+<!--       } -->
+<!--       .splash-content { -->
+<!--         z-index: 1; -->
+<!--         padding: 30px; -->
+<!--         border-radius: 10px; -->
+<!--       } -->
+<!--       .btn-custom { -->
+<!--         background-color: #007bff; -->
+<!--         border: none; -->
+<!--         padding: 10px 20px; -->
+<!--         border-radius: 5px; -->
+<!--         transition: background-color 0.3s; -->
+<!--       } -->
+<!--       .btn-custom:hover { -->
+<!--         background-color: #0056b3; -->
+<!--       } -->
+<!--       .title { -->
+<!--         font-size: 3em; -->
+<!--         font-weight: bold; -->
+<!--       } -->
+<!--       .subtitle { -->
+<!--         font-size: 1.5em; -->
+<!--         margin-bottom: 20px; -->
+<!--       } -->
+<!--       @keyframes fadeInUp { -->
+<!--         from { -->
+<!--           opacity: 0; -->
+<!--           transform: translateY(20px); -->
+<!--         } -->
+<!--         to { -->
+<!--           opacity: 1; -->
+<!--           transform: translateY(0); -->
+<!--         } -->
+<!--       } -->
+<!--       .fadeInUp { -->
+<!--         animation: fadeInUp 1s ease-out; -->
+<!--       } -->
+<!--     </style> -->
+<!--   </head> -->
+<!--   <body> -->
+<!--     <div class="splash-screen"> -->
+<!--       <div class="overlay"></div> -->
+<!--       <div class="splash-content animate__animated animate__fadeInUp"> -->
+<!--         <h1 class="title">Welcome to Election 2024</h1> -->
+<!--         <p class="subtitle">Your vote. Your voice. Your future.</p> -->
+<!--         <a href="#details" class="btn btn-custom">Learn More</a> -->
+<!--       </div> -->
+<!--     </div> -->
+<!---->
+<!--     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+<!--     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script> -->
+<!--     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+<!--   </body> -->
+<!-- </html> -->
+{% extends "base.html" %} {% block content %}
+<section class="container">
+  <div
+    class="d-flex justify-content-center align-items-center"
+    style="height: 90vh; width: 100vw"
+  >
+    <div class="content text-center">
+      <h3 class="mb-5 text-info">{{ school.name }}</h3>
+      <h1 class="title">Welcome to Election 2024</h1>
+      <p class="subtitle">
+        <span class="text-danger">Your vote.</span>
+        <span class="text-warning">Your voice.</span>
+        <span class="text-success">Your future.</span>
+      </p>
+      <a class="btn btn-outline-info" href="{{link}}">Login As Student</a>
     </div>
-{% endblock content %}
-
-<!-- Additional JavaScript Code -->
-{% block scripts %}
-    <script>
-        window.onload = function() {
-            setTimeout(()=> window.location = "{{url_for('election.student_login', school_abbr=school.school_abbr, poll_id=poll.id)}}", 5000);
-        }
-    </script>
-{% endblock scripts%}
-
-<!-- Additional CSS Code -->
-{% block style %}
-    <style type="text/css">
-        .logo {
-            height: 5.5em;
-            width: 6.5em;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            margin-top: -55px; /* Half the height */
-            margin-left: -55px; /* Half the width */
-         }
-    </style>
-{% endblock style%}
+  </div>
+</section>
+{% endblock %}

@@ -1,18 +1,12 @@
 # imports
-from flask import render_template, request, Blueprint
+from flask import jsonify, render_template, request, Blueprint
+from flask_login import login_required
 
 # from VoteFlow.models import SchoolUser, Poll
 from VoteFlow import db
 
 # Register this Page as a Blueprint
 main = Blueprint("main", __name__)
-
-# All Routes
-
-
-@main.route("/test")
-def test():
-    return render_template("polldashboard/polldashboardbase.html")
 
 
 @main.route("/")

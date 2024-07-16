@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block content %}
+<h3 class="text-center" style="margin-top: 6rem">Welcome</h3>
+<p class="text-center">Please login or sign up to continue</p>
+<h2 class="text-center text-info m-3">School Admin</h2>
+<div class="row d-flex justify-content-center align-items-center">
+  <div class="col-5 mb-5">
+    <a
+      href="{{url_for('auth.school_login')}}"
+      class="btn btn-outline-info btn-block"
+      >Login</a
+    >
+  </div>
+  <div class="col-5 mb-5">
+    <a
+      href="{{url_for('auth.school_register')}}"
+      class="btn btn-outline-info btn-block"
+      >Sign Up</a
+    >
+  </div>
+</div>
+<hr class="mx-5 text-info" />
+<h2 class="text-center text-info">Student</h2>
+<div class="d-flex justify-content-center">
+  <div class="">
+    <form method="post">
+      <div class="row p-2">
+        <div class="col">
+          <label class="form-label" for="election-id"
+            >Election ID
+            <input
+              class="form-control"
+              type="number"
+              name="election-id"
+              required
+            />
+          </label>
+        </div>
+        <div class="col">
+          <label class="form-label" for="school-id"
+            >School ID
+            <input
+              class="form-control"
+              type="number"
+              name="school-id"
+              required
+            />
+          </label>
+        </div>
+      </div>
+      <center><button class="btn btn-outline-info px-5">Login</button></center>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

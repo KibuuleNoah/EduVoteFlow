@@ -33,7 +33,11 @@
     <!--========== HEADER ==========-->
     <header class="header">
       <div class="header__container">
-        <img src="assets/img/perfil.jpg" alt="" class="header__img" />
+        <img
+          src="{{url_for('static',filename='DataStore/SchoolLogo/TS.jpg')}}"
+          alt=""
+          class="header__img"
+        />
         <div class="">
           <a class="navbar-brand" href="#">
             <div class="row">
@@ -45,11 +49,11 @@
                   onclick="window.history.back();"
                 ></i>
               </div>
-              <div class="col text-truncate text-break">
-                {{school.schoolname}}
+              <div class="col-5 text-truncate text-break">{{school.name}}</div>
+              <div class="col-1 m-0 p-0">
+                <i class="bx bx-chevron-right" style="font-size: 1.3rem"></i>
               </div>
-              &gt;
-              <div class="col text-truncate text-break">
+              <div class="col-5 text-truncate text-break">
                 {{ dash_location }}
               </div>
             </div>
@@ -88,7 +92,7 @@
               <h3 class="nav__subtitle">Profile</h3>
 
               <a
-                href="#"
+                href="{{ url_for('polls.dashboard_home',poll_id=poll.id)}}"
                 class="nav__link {%if dash_location=='Home'%}active{%endif%}"
               >
                 <i class="bx bx-home nav__icon"></i>
@@ -117,7 +121,7 @@
             <div class="nav__items">
               <h3 class="nav__subtitle">Menu</h3>
               <a
-                href="{{ url_for('polls.poll_screen', school_abbr=school.school_abbr)}}"
+                href="{{ url_for('polls.home', school_abbr=school.school_abbr)}}"
                 class="nav__link"
               >
                 <i class="bx bx-list-ul nav__icon"></i>
@@ -125,43 +129,37 @@
               </a>
 
               <a
-                class="nav__link {%if dash_location=='Update-Data'%}active{%endif%}"
-                href="{{ url_for('polls.update_data', school_abbr=school.school_abbr, poll_id=poll.id)}}"
+                class="nav__link {%if dash_location=='Manage-Students'%}active{%endif%}"
+                href="{{ url_for('polls.manage_students',  poll_id=poll.id)}}"
               >
                 <i class="bx bx-cog nav__icon"></i>
-                <span class="nav__name">Update Data</span>
+                <span class="nav__name">Manage Students</span>
+              </a>
+
+              <a
+                class="nav__link {%if dash_location=='Manage-Candidates'%}active{%endif%}"
+                href="{{url_for('polls.manage_candidates',poll_id=poll.id)}}"
+              >
+                <i class="bx bx-cog nav__icon"></i>
+                <span class="nav__name">Manage Candidates</span>
               </a>
               <a
                 class="nav__link {%if dash_location=='Add-Students'%}active{%endif%}"
-                href="{{ url_for('polls.add_students', school_abbr=school.school_abbr, poll_id=poll.id) }}"
+                href="{{ url_for('polls.add_students',  poll_id=poll.id) }}"
               >
                 <i class="bx bx-user-plus nav__icon"></i>
                 <span class="nav__name">Add Students</span>
               </a>
               <a
-                class="nav__link {%if dash_location=='Add-Nominees'%}active{%endif%}"
-                href="{{ url_for('polls.add_nominees', school_abbr=school.school_abbr, poll_id=poll.id) }}"
+                class="nav__link {%if dash_location=='Add-Candidates'%}active{%endif%}"
+                href="{{ url_for('polls.add_candidates',  poll_id=poll.id) }}"
               >
                 <i class="bx bx-group nav__icon"></i>
-                <span class="nav__name"> Add Nominees</span>
-              </a>
-              <a
-                class="nav__link {%if dash_location=='Close-Poll'%}active{%endif%}"
-                href="{{ url_for('polls.delete_poll', school_abbr=school.school_abbr, poll_id=poll.id) }}"
-              >
-                <i class="bx bx-trash nav__icon"></i
-                ><span class="nav__name"> Delete Poll</span>
-              </a>
-              <a
-                class="nav__link {%if dash_location=='Elections'%}active{%endif%}"
-                href="{{ url_for('polls.start_election', school_abbr=school.school_abbr, poll_id=poll.id) }}"
-              >
-                <i class="bx bx-bar-chart-alt-2 nav__icon"></i
-                ><span class="nav__name"> Start Election</span>
+                <span class="nav__name"> Add Candidates</span>
               </a>
               <a
                 class="nav__link {%if dash_location=='Results'%}active{%endif%}"
-                href="{{ url_for('polls.results', school_abbr=school.school_abbr, poll_id=poll.id) }}"
+                href="{{ url_for('polls.results',  poll_id=poll.id) }}"
               >
                 <i class="bx bx-pie-chart-alt nav__icon"></i
                 ><span class="nav__name"> Election Results</span>
@@ -171,8 +169,8 @@
         </div>
 
         <a
-          href="{{url_for('users.school_logout')}}"
-          class="nav__link nav__logout"
+          href="{{url_for('auth.user_logout')}}"
+          class="text-danger nav__link nav__logout"
         >
           <i class="bx bx-log-out nav__icon"></i>
           <span class="nav__name">Log Out</span>
@@ -181,7 +179,20 @@
     </div>
 
     <!--========== CONTENTS ==========-->
-    <main>{% block viewer %} {% endblock viewer %}</main>
+    <main>
+      <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ category }} flashmessage"
+          style="width: 100%"
+        >
+          {{ message }}
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+      </div>
+      {% block viewer %} {% endblock viewer %}
+    </main>
 
     <!--========== JQUERY JS ==========-->
     <script

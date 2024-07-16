@@ -1,5 +1,7 @@
 # imports
 from flask import (
+    abort,
+    json,
     render_template,
     request,
     Blueprint,
@@ -10,12 +12,11 @@ from flask import (
     current_app,
     session,
 )
-from VoteFlow.models import School, Poll, Student, Nominee
+from VoteFlow.models import School, Poll, Student, Candidate
 from VoteFlow.election.forms import StudentLogin
 from flask_login import login_required, current_user
 from VoteFlow import db
-from functools import wraps
-import pprint
+from VoteFlow.auth.utils import studentloginrequired
 
 # Register this Page as a Blueprint
 election = Blueprint("election", __name__)
@@ -29,253 +30,105 @@ election = Blueprint("election", __name__)
 # 			return func(school_abbr, poll_id)
 # 		else:
 # 			flash(f'The Poll ({poll.poll_name}) is currently not Active.', 'danger')
-# 			return redirect(url_for('polls.poll_screen', school_abbr=school_abbr))
-# 	return func_wrapper
-
-# def student_loginrequired(func):
-# 	@wraps(func)
-# 	def func_wrapper(school_abbr, poll_id, s_id):
-# 		isloggedin = session.get('logged_in')
-# 		if(not isloggedin):
-# 			flash(f'This Page is Password Protected! Please Login to Continue!', 'danger')
-# 			return redirect(url_for('election.student_login', school_abbr=school_abbr, poll_id=poll_id))
-# 		else:
-# 			return func(school_abbr, poll_id, s_id=s_id)
+# 			return redirect(url_for('polls.home', school_abbr=school_abbr))
 # 	return func_wrapper
 
 
-def prepare_nominees(nominees, posts):
-    displayednominees = []
-    for post in posts:
-        xnominees = []
-        for nominee in nominees:
-            if nominee["post"] == post:
-                xnominees.append(nominee)
-        displayednominees.append({"post": post, "nominees": xnominees})
-    return displayednominees
+def prepare_candidates(candidates: list[Candidate]):
+    displayed_candidates = {}
+    print(candidates)
+    for candidate in candidates:
+        dict_candidate = candidate.to_dict
+        candidate_post = dict_candidate["post"]
+        if candidate_post in displayed_candidates:
+            displayed_candidates[candidate_post].append(dict_candidate)
+        else:
+            displayed_candidates[candidate_post] = [dict_candidate]
+    return displayed_candidates
 
 
-def cast_vote(posts, s_id):
-    for post in posts:
-        nominee_id = request.form[post]
-        nominee = Nominee.query.filter_by(id=nominee_id).first()
-        nominee.votes += 1
-        current_student = Student.query.filter_by(id=s_id).first()
-        current_student.voted = True
+@election.route("/cast-vote", methods=["POST"])
+@login_required
+@studentloginrequired
+def cast_vote(school_id, poll_id):
+    candidate_id = int(json.loads(request.data)["candidateId"])
+    print(candidate_id, poll_id)
+    candidate = Candidate.query.filter_by(poll_id=poll_id, id=candidate_id).first()
+    print(candidate, "*" * 20)
+    if candidate:
+        poll = Poll.query.get(int(poll_id))
+        candidate.votes += 1
+        poll.total_votes += 1
         db.session.commit()
+    return jsonify({})
 
 
 @election.route("/")
 @login_required
 # @activepollrequired
-def splash_screen(school_abbr, poll_id):
-    poll = Poll.query.filter_by(host=school_abbr, id=poll_id).first()
-    school = School.query.filter_by(school_abbr=school_abbr).first()
+def splash_screen(school_id, poll_id):
+    school = School.query.get(school_id)
+    poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
+    if not poll:
+        abort(404)
+    if poll.status != "Active":
+        return render_template("election/not-started.html")
+    link = url_for("auth.student_login", school_id=school.id, poll_id=poll.id)
     return render_template(
-        "election/splashscreen.html", title="Election", school=school, poll=poll
-    )
-
-
-@election.route("/studentlogin", methods=["GET", "POST"])
-@login_required
-# @activepollrequired
-def student_login(school_abbr, poll_id):
-    poll = Poll.query.filter_by(host=school_abbr, id=poll_id).first()
-    school = School.query.filter_by(school_abbr=school_abbr).first()
-    form = StudentLogin()
-    if form.validate_on_submit():
-        username = request.form["username"].title()
-        password = request.form["password"].upper()
-        student = Student.query.filter_by(
-            school=school.school_abbr,
-            poll=poll.id,
-            username=username,
-            password=password,
-        ).first()
-        print(username, password, student)
-        if student:
-            if student.voted == False:
-                # Login Successful
-                # session['logged_in'] = True
-                return redirect(
-                    url_for(
-                        "election.voting_page",
-                        school_abbr=school_abbr,
-                        poll_id=poll_id,
-                        s_id=student.id,
-                    )
-                )
-            else:
-                flash("A Single User cannot Vote more than Once!", "danger")
-                return redirect(
-                    url_for(
-                        "election.student_login",
-                        school_abbr=school_abbr,
-                        poll_id=poll_id,
-                    )
-                )
-        else:
-            flash(
-                "Either the Username or the Password is Incorrect. Please check Credentials. Do not ignore the Case",
-                "danger",
-            )
-            return redirect(
-                url_for(
-                    "election.student_login", school_abbr=school_abbr, poll_id=poll_id
-                )
-            )
-    return render_template(
-        "election/login.html",
+        "election/splashscreen.html",
         title="Election",
         school=school,
         poll=poll,
-        form=form,
-        poll_name=poll.poll_name,
-    )
-
-
-@election.route("/studentlogout/<s_id>")
-@login_required
-# @studentloginrequired
-# @activepollrequired
-def student_logout(school_abbr, poll_id, s_id):
-    # session['logged_in'] = False
-    return redirect(
-        url_for("election.student_login", school_abbr=school_abbr, poll_id=poll_id)
+        link=link,
     )
 
 
 @election.route("/votingpage/<s_id>", methods=["GET", "POST"])
-@login_required
-# @studentloginrequired
+# @login_required
+@studentloginrequired
 # @activepollrequired
-def voting_page(school_abbr, poll_id, s_id):
-    # if(request.user_agent.browser == 'chrome'):
-    # 	return redirect(url_for('main.nochrome'))
-    poll = Poll.query.filter_by(host=school_abbr, id=poll_id).first()
-    school = School.query.filter_by(school_abbr=school_abbr).first()
-    current_student = Student.query.filter_by(
-        school=school.school_abbr, poll=poll.id, id=s_id
-    ).first()
-    electype = poll.poll_type
-    nominees = Nominee.query.filter_by(school=school_abbr, poll=poll_id).all()
-    applicable_nominees = []
+def voting_page(school_id, poll_id, s_id):
+    school = School.query.get(school_id)
+    current_student = current_user
+    if not school:
+        abort(404)
+    poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
+    if not poll:
+        abort(404)
+    candidates = poll.candidates
 
-    if request.method == "POST":
-        if electype == "A2A":
-            posts = {x.post[1:-1] for x in nominees}
-            cast_vote(posts, s_id)
-        if electype == "G-I2I":
-            posts = {x.post.split("-")[1][1:-1] for x in nominees}
-            cast_vote(posts, s_id)
-        if electype == "H-I2I":
-            posts = {x.post.split("-")[1][1:-1] for x in nominees}
-            cast_vote(posts, s_id)
-        elif electype == "GH-I2I":
-            posts = {x.post.split("-")[2][1:-1] for x in nominees}
-            cast_vote(posts, s_id)
-        return redirect(
-            url_for(
-                "election.student_logout",
-                school_abbr=school_abbr,
-                poll_id=poll_id,
-                s_id=s_id,
-            )
-        )
+    # if request.method == "POST":
+    #     candidate_id = request.form.get("")
+    #     # cast_vote(, poll_id)
+    #     return redirect(
+    #         url_for(
+    #             "election.student_logout",
+    #             poll_id=poll_id,
+    #             s_id=s_id,
+    #         )
+    #     )
 
-    if electype == "A2A":
-        applicable_nominees = []
-        for nominee in nominees:
-            post = nominee.post
-            applicable_nominees.append({"post": post, "nominee": nominee})
-        posts = {x["post"] for x in applicable_nominees}
-        displayednominees = prepare_nominees(applicable_nominees, posts)
-        return render_template(
-            "election/voting.html",
-            title="Election",
-            school=school,
-            poll=poll,
-            student=current_student,
-            nominees=displayednominees,
-            posts=posts,
-        )
+    applicable_candidates = prepare_candidates(candidates)
 
-    elif electype == "H-I2I":
-        applicable_nominees = []
-        for nominee in nominees:
-            formattedpost = nominee.post
-            splice = formattedpost.split("-")
-            house = splice[0]
-            post = splice[1]
-            if house == f"[{current_student.house.upper()}]" or house == "[ANY]":
-                applicable_nominees.append({"post": post, "nominee": nominee})
-        posts = {x["post"] for x in applicable_nominees}
-        displayednominees = prepare_nominees(applicable_nominees, posts)
-
-        return render_template(
-            "election/voting.html",
-            title="Election",
-            school=school,
-            poll=poll,
-            student=current_student,
-            nominees=displayednominees,
-            posts=posts,
-        )
-
-    elif electype == "G-I2I":
-        applicable_nominees = []
-        for nominee in nominees:
-            formattedpost = nominee.post
-            splice = formattedpost.split("-")
-            gender = splice[0]
-            post = splice[1]
-            if gender == f"[{current_student.gender.upper()}]" or gender == "[ANY]":
-                applicable_nominees.append({"post": post, "nominee": nominee})
-
-        posts = {x["post"] for x in applicable_nominees}
-        displayednominees = prepare_nominees(applicable_nominees, posts)
-
-        return render_template(
-            "election/voting.html",
-            title="Election",
-            school=school,
-            poll=poll,
-            student=current_student,
-            nominees=displayednominees,
-            posts=posts,
-        )
-
-    elif electype == "GH-I2I":
-        applicable_nominees = []
-        for nominee in nominees:
-            formattedpost = nominee.post
-            splice = formattedpost.split("-")
-            house = splice[0]
-            gender = splice[1]
-            post = splice[2]
-            if (house == f"[{current_student.house.upper()}]" or house == "[ANY]") and (
-                gender == f"[{current_student.gender.upper()}]" or gender == "[ANY]"
-            ):
-                applicable_nominees.append({"post": post, "nominee": nominee})
-        posts = {x["post"] for x in applicable_nominees}
-        displayednominees = prepare_nominees(applicable_nominees, posts)
-
-        return render_template(
-            "election/voting.html",
-            title="Election",
-            school=school,
-            poll=poll,
-            student=current_student,
-            nominees=displayednominees,
-            posts=posts,
-        )
-
-
-@election.route("/get_nominee_data/<id>")
-def get_nominee_data(school_abbr, poll_id, id):
-    nominee = Nominee.query.filter_by(id=id).first()
-    url = (
-        url_for("static", filename=f"DataStore/{school_abbr}/{poll_id}/") + nominee.logo
+    print(applicable_candidates)
+    return render_template(
+        "election/voting.html",
+        title="Election",
+        school=school,
+        poll=poll,
+        student=current_student,
+        candidates=json.dumps(applicable_candidates),
     )
-    print(url)
-    return jsonify({"logo_url": url, "slogan": nominee.slogan})
+
+
+@election.route("/get_candidate_data/<id>")
+def get_candidate_data(school_id, poll_id, id):
+    candidate = Candidate.query.filter_by(poll_id=poll_id, id=id).first()
+    if candidate:
+        url = (
+            url_for("static", filename=f"DataStore/{school_abbr}/{poll_id}/")
+            + candidate.logo
+        )
+        print(url)
+        return jsonify({"logo_url": url, "slogan": candidate.slogan})
+    return abort(404)

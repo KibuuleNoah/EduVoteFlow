@@ -1,24 +1,131 @@
 {% extends 'polldashboard/polldashboardbase.html' %}
 
 {% block viewer %}
-   {% if status == "Active" %}
+<div class="text-white">
+  <div class="content">
+    <div class="dashboard-header text-center">
+      <h1 class="text-info">Welcome, Admin</h1>
+      <p>Manage the school election efficiently</p>
+    </div>
+      
+    <h4 class="mt-2 mb-4 display-3 text-center">
+      {{poll.name}} 
+      <sup class="
+        {% if status == "Active" %}
+        text-success
+        {% elif status == "Scheduled" %}
+        text-warning
+        {% elif status == "Archived" %}
+        text-danger
+        {% endif %}
+        " 
+        style="font-size:1rem;"
+        >{{status}}</sup>
+    </h4>
+    {% if status == "Active" %}
       <div class="elecstart">
 			<center>
-				<h1 class="display-1">Election is Active</h1>
-				<h5 class="text-info">Election Target: <a href="{{link}}">{{link}}</a></h5>
+				<h6 class="text-info">link: <a href="{{link}}">{{link}}</a></h6>
 				<br><br>
-				<a href="{{link}}" class="btn btn-muted x">Go to Student Login</a>
+				<a href="{{link}}" class="btn btn-outline-info">Go to Student Login</a>
 			</center>
 		</div>
    {% else %}
       <form method="POST" method="/" class='elecstart'>
          <center>
-         <h1 class="display-1">{{poll.poll_name}}</h1>
-         <a href="{{ url_for('polls.start_election', school_abbr=school.school_abbr, poll_id=poll.id) }}" class="btn btn-outline-info m-5">Start Election</a>
+         <a href="{{ url_for('polls.start_election', school_id=school.id, poll_id=poll.id) }}" class="btn btn-outline-info m-5"><i class="bx bx-bar-chart-alt-2"></i> Start Election</a>
          </center>
       </form>
    {% endif %}
+
+    <!-- Overview Section -->
+    <section id="overview" class="mt-5">
+      <h2 class="text-info">Overview</h2>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card bg-dark text-white text-center mb-4">
+            <div class="card-body">
+              <h4>Total Candidates</h4>
+              <h3>{{len_cand}}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-dark text-white text-center mb-4">
+            <div class="card-body">
+              <h4>Total Voters</h4>
+              <h3>{{len_stud}}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-dark text-white text-center mb-4">
+            <div class="card-body">
+              <h4>Votes Cast</h4>
+              <h3>{{poll.total_votes}}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Top 5 Candidates Section -->
+    <section class="mt-5"id="candidates">
+      <h2 class="text-info">Top 5 Candidates</h2>
+      <table class="table table-dark table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Status</th>
+            <th>votes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td>President</td>
+            <td>Approved</td>
+            <td>225</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Unopposed Candidates Section -->
+    <section class="mt-5 mb-3" id="unopposed-candidates">
+      <h2 class="text-info">Unopposed Candidates</h2>
+      <small class="text-warning mt-2 mb-3">These candidates won automatically because they have no opponet</small>
+      <table class="table table-dark table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td>President</td>
+            <td>Unopposed</td>
+            <td>
+              lorem
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>
+<div class="d-flex justify-content-end mt-5">
+  <button type="submit" class="btn btn-danger">                
+    <i class="bx bx-trash"></i>
+    Delete Poll
+  </button>
+  <div>
 {% endblock viewer %}
 
 {% block scripts %}
 {% endblock scripts %}
+

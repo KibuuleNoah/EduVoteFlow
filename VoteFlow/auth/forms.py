@@ -32,6 +32,6 @@ class AddVoters(FlaskForm):
     submit = SubmitField("Add Voters")
 
 
-class AddNominees(FlaskForm):
+class AddCandidates(FlaskForm):
     file = FileField()
     submit = SubmitField("Add Voters")

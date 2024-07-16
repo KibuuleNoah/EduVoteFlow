@@ -1,12 +1,6 @@
-{% extends "screenlayout.html" %}
+{% extends "base.html" %}
 
-{% block navbar %}
-   <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top mr-auto">
-      <a class="navbar-brand" href="#">VoteFlow</a>
-  </nav>
-{% endblock navbar %}
-
-{% block viewer %}
+{% block content %}
 <div class="modal fade" id="create-poll-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="rounded" style="background:white">
@@ -25,32 +19,19 @@
                 {{ form.hidden_tag() }}
                 <fieldset class="form-group">
                   <div class="form-group">
-                    {{ form.poll_name.label(class="form-control-label") }}
-                    {% if form.poll_name.errors %}
-                    {{ form.poll_name(class="form-control form-control-lg is-invalid") }}
+                    {{ form.name.label(class="form-control-label") }}
+                    {% if form.name.errors %}
+                    {{ form.name(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                      {% for error in form.poll_name.errors %}
+                      {% for error in form.name.errors %}
                       <span>{{ error }}</span>
                       {% endfor %}
                     </div>
                     {% else %}
-                    {{ form.poll_name(class="form-control form-control-lg tb", placeholder="Poll Name") }}
+                    {{ form.name(class="form-control form-control-lg tb", placeholder="Poll Name") }}
                     {% endif %}
                   </div>
-                  <div class="form-group">
-                    {{ form.poll_type.label(class="form-control-label") }}
-                    {% if form.poll_type.errors %}
-                    {{ form.poll_type(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                      {% for error in form.poll_type.errors %}
-                      <span>{{ error }}</span>
-                      {% endfor %}
-                    </div>
-                    {% else %}
-                    {{ form.poll_type(class="form-control form-control-lg tb", id="electype", onclick="RemoveHouses();") }}
-                    {% endif %}
-                  </div>
-                  <div class="form-group">
+                                    <div class="form-group">
                     {{ form.houses.label(class="form-control-label", id="hlabel") }}
                     {% if form.houses.errors %}
                     {{ form.houses(class="form-control form-control-lg is-invalid") }}
@@ -64,16 +45,16 @@
                     {% endif %}
                   </div>
                   <div class="form-group">
-                    {{ form.positions.label(class="form-control-label") }}
-                    {% if form.positions.errors %}
-                    {{ form.positions(class="form-control form-control-lg is-invalid") }}
+                    {{ form.posts.label(class="form-control-label") }}
+                    {% if form.posts.errors %}
+                    {{ form.posts(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                      {% for error in form.positions.errors %}
+                      {% for error in form.posts.errors %}
                       <span>{{ error }}</span>
                       {% endfor %}
                     </div>
                     {% else %}
-                    {{ form.positions(class="form-control form-control-lg tb", placeholder="Position1, Position2, Position3, ...",rows="6") }}
+                    {{ form.posts(class="form-control form-control-lg tb", placeholder="Position1, Position2, Position3, ...",rows="6") }}
                     {% endif %}
                   </div>
 
@@ -108,11 +89,11 @@
     {% for poll in activepolls %}
     <div class="row">
       <div class="col-lg mb-2">
-        <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home', school_abbr=poll.host, poll_id=poll.id)}}';">
-          <h2 class="card-title">{{poll['poll_name']}}</h2>
+        <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home', school_id=school.id, poll_id=poll.id)}}';">
+          <h2 class="card-title">{{poll['name']}}</h2>
           <div class="d-flex justify-content-center m-3">
             {% if poll['status'] == 'Active' %}
-            <a href="{{url_for('election.splash_screen', school_abbr=poll.host, poll_id=poll.id)}}" class="btn btn-primary my-2">Go To Election Page</a><br>
+            <a href="{{url_for('election.splash_screen', school_id=school.id, poll_id=poll.id)}}" class="btn btn-primary my-2">Go To Election Page</a><br>
             {% endif %}
           </div>
           <div class="row">
@@ -126,36 +107,6 @@
         </div> 
       </div>
     </div>
-
-    <!-- <div class="row"> -->
-    <!--    <div class="col-lg"> -->
-    <!--       <div class="" onclick="window.location.href='{{url_for('polls.dashboard_home', school_abbr=poll.host, poll_id=poll.id)}}';"> -->
-    <!--          <h2>{{poll['poll_name']}}</h2> -->
-    <!--          {% if poll['status'] == 'Active' %} -->
-    <!--          <a href="{{url_for('election.splash_screen', school_abbr=poll.host, poll_id=poll.id)}}" class="btn btn-primary my-2">Go To Election Page</a><br> -->
-    <!--          {% else %} -->
-    <!--          <br> -->
-    <!--          {% endif %} -->
-    <!--          {{poll['year']}} -->
-    <!--          <br> -->
-    <!--          Active -->
-    <!--          <br> -->
-    <!--       </div> -->
-    <!---->
-    <!--       <div class="pollobject" onclick="window.location.href='{{url_for('polls.dashboard_home', school_abbr=poll.host, poll_id=poll.id)}}';"> -->
-    <!--          <h2>{{poll['poll_name']}}</h2> -->
-    <!--          {% if poll['status'] == 'Active' %} -->
-    <!--          <a href="{{url_for('election.splash_screen', school_abbr=poll.host, poll_id=poll.id)}}" class="btn btn-primary my-2">Go To Election Page</a><br> -->
-    <!--          {% else %} -->
-    <!--          <br> -->
-    <!--          {% endif %} -->
-    <!--          {{poll['year']}} -->
-    <!--          <br> -->
-    <!--          Active -->
-    <!--          <br> -->
-    <!--       </div> -->
-    <!--    </div> -->
-    <!-- </div> -->
     {% endfor %}
   </div>
   {% endif %}
@@ -167,8 +118,8 @@
     {% for poll in scheduledpolls %}
     <div class="row">
       <div class="col-lg mb-2">
-        <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home', school_abbr=poll.host, poll_id=poll.id)}}';">
-          <h2 class="card-title">{{poll['poll_name']}}</h2>
+        <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home',poll_id=poll.id)}}';">
+          <h2 class="card-title">{{poll['name']}}</h2>
           <div class="row">
             <div class="col">
               <b>{{poll['year']}}</b>
@@ -191,8 +142,8 @@
     {% for poll in archivedpolls %}
     <div class="row">
       <div class="col-lg">
-        <div class="pollobject" onclick="window.location.href='{{url_for('polls.results_page', school_abbr=poll.host, poll_id=poll.id)}}';">
-          <h2>{{poll['poll_name']}}</h2>
+        <div class="pollobject" onclick="window.location.href='{{url_for('polls.results_page', school_id=school.id, poll_id=poll.id)}}';">
+          <h2>{{poll['name']}}</h2>
           <br>
           {{poll['year']}}
           <br>
@@ -223,7 +174,7 @@
        >+</button>
 
 
-{% endblock viewer %}
+{% endblock content %}
 
 {% block additionalstyles %}
    .poll-body{

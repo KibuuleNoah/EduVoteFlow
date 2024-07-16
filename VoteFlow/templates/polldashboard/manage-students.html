@@ -1,0 +1,198 @@
+{%extends 'polldashboard/polldashboardbase.html'%}
+{%block style%}
+<style>
+body{
+  color: white;
+  padding: 20px;
+/*  background-color: black;*/
+}
+    .topbar{
+      display: flex;
+    }
+    .namebar{
+      display: flex;
+    }
+    .siden{
+      margin-top: 28px;
+      margin-left: 15px;
+      opacity: 0.5;
+    }
+    th{
+      overflow-x: auto;
+      white-space: nowrap !important;
+    }
+</style>
+{%endblock style%}
+{%block scripts%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function(){
+    $("#inputfield").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $("#student_table_body tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+</script>
+{%endblock scripts%}
+{%block viewer %}
+<div class="namebar">
+  <h1 class="d-flex justify-content-center display-2">Manage Students</h1>
+  <div class="d-flex justify-content-center"><i class="d-flex siden">&gt; {{p_name}} &lt;</i></div>
+</div>
+
+{% if students %}
+<div class="input-grounp topbar d-flex" style="max-width: 20rem">
+  <!-- <input type="text" class="form-control" id="inputfield" placeholder="Enter Student Name"> -->
+  <input type="search" class="form-control rounded-end-0"  id="inputfield" placeholder="Search Anything">
+  <span class="input-grounp-text border border-info rounded-end"><i class="bx bx-search text-info" style="font-size:2rem"></i></span>
+</div>
+<br>
+{% if poll.statu == "Scheduled" %}
+<div class="row">
+  <div class="col-8">
+<details class="mb-3">
+  <summary class="btn btn-info">Add Student</summary><br>
+
+  <!-- <div class="container"> -->
+  <div class="d-flex">
+    <form method="POST" action="{{url_for('polls.add_student',poll_id=poll.id)}}">
+    {{ form.hidden_tag() }}
+    <div class="form-group col-md-5">
+      {{ form.student_name.label }}<br>
+      {{ form.student_name(class='form-control') }}<br>
+      {% for error in form.student_name.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.grade.label }}<br>
+      {{ form.grade(class='form-control') }}<br>
+      {% for error in form.grade.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.section.label }}<br>
+      {{ form.section(class='form-control') }}<br>
+      {% for error in form.section.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.roll_no.label }}<br>
+      {{ form.roll_no(class='form-control') }}<br>
+      {% for error in form.roll_no.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.gender.label }}<br>
+      {{ form.gender(class='form-control') }}<br>
+      {% for error in form.gender.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.house.label }}<br>
+      {{ form.house(class='form-control') }}<br>
+      {% for error in form.house.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-5">
+      {{ form.submit(class='btn btn-info') }}
+    </div>
+  </form>
+  </div>
+</details>
+</div>
+  <div class="col">
+    <div class="align-end">
+      <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#clear-all-modal">
+        <i class="bx bx-x" style="font-size: 1.5rem"></i> 
+        Clear All
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+<div class="d-flex w-100 overflow-auto">
+<table class="table table-striped table-dark restable w-100" id="student_table">
+  <thead>
+    <tr>
+      <th scope="col">Sl.No</th>
+      <th scope="col">Student Name</th>
+      <th scope="col">Username</th>
+      <th scope="col">Password</th>
+      <th scope="col">Grade</th>
+      <th scope="col">Section</th>
+      <th scope="col">Roll No.</th>
+      <th scope="col">Gender</th>
+      <th scope="col">House</th>
+      {% if poll.statu == "Scheduled" %}
+      <th scope="col">Delete</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody id="student_table_body">
+    {% for student in students %}
+    <!-- {if not student.house and not student.gender%} -->
+    <form action="" method="post">
+      <tr>
+        <td scope="row">{{loop.index}}</td>
+        <td scope="row">{{student.full_name}}</td>
+        <td class="align-middle">
+          {{student.username}}
+        </td>
+        <td class="align-middle">
+          {{student.password}}
+        </td>
+        <td class="align-middle">
+          {{student.grade}}
+        </td>
+        <td class="align-middle">
+          {{student.section}}
+        </td>
+        <td class="align-middle">
+          {{student.roll_no}}
+        </td>
+        <td class="align-middle">
+          {{student.gender}}
+        </td>
+        <td class="align-middle">
+          {{student.house}}
+        </td>
+        {% if poll.statu == "Scheduled" %}
+        <td><a class="danger" href="{{url_for('polls.delete_student',poll_id=poll.id,s_id=student.id)}}"><i class="bx bx-x text-danger" style="font-size: 2rem"></i></a></td>
+        {% endif %}
+      </tr> 
+    </form>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</form>
+{% else %}
+<center style="margin-top: 7rem;">
+  <div class="display-2 border border-info rounded">
+    No Students<br> Yet !!!
+  </div>
+</center>
+{% endif %}
+<!-- Modal -->
+<div class="modal fade" id="clear-all-modal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h1 class="modal-title text-danger fs-5" id=""><center>Sure you want to proceed with the Deletion ?<br>All students will cleared pemanently !</center></h1>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-info" data-bs-dismiss="modal">Cancel</button>
+        <a href="{{url_for('polls.delete_all_students',poll_id=poll.id)}}" class="btn btn-danger">proceed</a>
+      </div>
+    </div>
+  </div>
+</div>
+{%endblock viewer %}

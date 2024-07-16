@@ -1,16 +1,7 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 
 <!-- Main Body Code -->
 {% block content %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }} flashmessage" style="width:100%;">
-  {{ message }}
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
 <div class="container">
   <div class="d-flex justify-content-center">
     <form method="POST" action="" enctype="multipart/form-data">
@@ -70,7 +61,7 @@
       <div class="form-group">{{ form.submit(class="btn btn-info submit") }}</div>
       <center>
         <small class="text-muted">
-          Need An Account? <a class="ml-2" href="{{ url_for('users.school_register') }}">Sign Up Now</a>
+          Need An Account? <a class="ml-2" href="{{ url_for('auth.school_register') }}">Sign Up Now</a>
         </small>
       </center>
     </form>

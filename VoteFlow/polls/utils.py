@@ -1,4 +1,8 @@
-from VoteFlow.models import Student
+from flask import abort, flash, url_for, redirect
+from functools import wraps
+from flask_login import current_user
+from sqlalchemy import func
+from VoteFlow.models import Candidate, Poll, School, Student, User
 from openpyxl import load_workbook
 
 
@@ -18,22 +22,22 @@ def extract_excel_data(fileobject):
     return data
 
 
-def create_username(fullname, grade, section):
+def created_student_username(fullname, grade, section):
     subnames = fullname.strip().split(" ")
-    print(subnames)
     firstname = subnames[0]
-    username = ""
-    # CHECK FOR SINGLE LETTER FIRST NAME
+    # check for single letter first name
     if len(firstname) > 2:
-        username = "{0}{1}{2}".format(firstname, grade, section)
-    else:
-        username = "{0}{1}{2}".format(subnames[1], grade, section)
-    return username
+        return f"{firstname}{grade}{section}"
+    return f"{subnames[1]}{grade}{section}"
+
+
+def created_student_password(grade, section, roll_no):
+    return f"{grade}{section}{roll_no}"
 
 
 # Check For Duplocate usernames and report them.
 def flag_duplicate_usernames(data):
-    # CODE TO GET INDEX OF DUPLICATE NAMES
+    # code to get index of duplicate names
     def list_duplicates_of(seq, item):
         start_at = -1
         locs = []
@@ -47,23 +51,23 @@ def flag_duplicate_usernames(data):
                 start_at = loc
         return locs
 
-    # GET INDEX OF DUPLICATES
+    # get index of duplicates
     usernames = [data[x]["username"] for x in range(len(data))]
     all_indexes = [list_duplicates_of(usernames, u) for u in usernames]
 
-    # REMOVING DUPLICATE INDEXES
+    # removing duplicate indexes
     duplicateIndexes = []
     for d in all_indexes:
         if len(d) > 1:
             if d not in duplicateIndexes:
                 duplicateIndexes.append(d)
-    # GET DUPLICATE ITEMS FROM INDEXES
+    # get duplicate items from indexes
     duplicatedObjects = []
     for e in duplicateIndexes:
         for index in e:
             duplicatedObjects.append(data[index])
 
-    # SEND BACK DB OBJECTS
+    # send back db objects
     student_objects = []
     for i in range(len(duplicatedObjects)):
         student = Student.query.filter_by(
@@ -71,3 +75,77 @@ def flag_duplicate_usernames(data):
         ).first()
         student_objects.append(student)
     return student_objects
+
+
+def created_student_user(student: Student, db):
+    new_user = User(user_type="student", user_id=student.id)
+    db.session.add(new_user)
+    db.session.commit()
+
+
+def active_sched_poll_required(func):
+    """
+    Active and Scheduled polls required
+    """
+
+    @wraps(func)
+    def func_wrapper(poll_id):
+        poll = Poll.query.filter_by(school_id=current_user.id, id=poll_id).first()
+        if not poll:
+            abort(404)
+        if poll.status != "Archived":
+            return func(poll_id)
+        else:
+            flash(
+                f"This Poll has been Archived! The Dashboard cannot be viewed for a Archived Poll",
+                "danger",
+            )
+            return redirect(url_for("polls.home"))
+
+    return func_wrapper
+
+
+def add_record(candidate: dict, school_id: int, poll: Poll):
+    candidate_objects = []
+    new_candidate = Candidate(
+        school_id=school_id,
+        poll_id=poll.id,
+        full_name=candidate["student_name"],
+        house="",
+        gender="",
+        post=f"[{candidate['post']}]",
+        logo=f"{candidate['student_name'].replace(' ', '_')}.jpg",
+        slogan=candidate["slogan"],
+        votes=0,
+    )
+    candidate_objects.append(new_candidate)
+    return candidate_objects
+
+
+def get_poll_link(school_id: int, poll_id: int):
+    poll = Poll.query.filter_by(id=poll_id).first()
+    return url_for(
+        "election.splash_screen", school_id=school_id, poll_id=poll.id, _external=True
+    )
+
+
+def get_unopposed_candidates(db):
+    unopposed_candidates = (
+        db.session.query(Candidate)
+        .group_by(Candidate.post)
+        .having(func.count(Candidate.id) == 1)
+        .all()
+    )
+
+    return unopposed_candidates
+
+
+def save_candidates(
+    school: School, poll: Poll, posts: list[str], candidates: list[dict], db
+):
+    for post in posts:
+        for candidate in candidates:
+            if post == candidate["post"]:
+                db.session.bulk_save_objects(add_record(candidate, school.id, poll))
+                db.session.commit()
+        print("-" * 30)

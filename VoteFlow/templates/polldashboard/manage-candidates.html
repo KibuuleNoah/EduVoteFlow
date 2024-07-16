@@ -1,0 +1,196 @@
+{%extends 'polldashboard/polldashboardbase.html'%}
+{%block style%}
+<style>
+body{
+  color: white;
+  padding: 20px;
+/*  background-color: black;*/
+}
+    .topbar{
+      display: flex;
+    }
+    .namebar{
+      display: flex;
+    }
+    .siden{
+      margin-top: 28px;
+      margin-left: 15px;
+      opacity: 0.5;
+    }
+    th{
+      overflow-x: auto;
+      white-space: nowrap !important;
+    }
+</style>
+{%endblock style%}
+{%block scripts%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function(){
+    $("#inputfield").on("keyup", function() {
+      var value = $(this).val().toLowerCase();
+      $("#student_table_body tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+</script>
+{%endblock scripts%}
+{%block viewer %}
+<div class="namebar">
+  <h1 class="d-flex justify-content-center display-2">Manage Candidates</h1>
+  <div class="d-flex justify-content-center"><i class="d-flex siden">&gt; {{p_name}} &lt;</i></div>
+</div>
+
+{% if candidates %}
+<div class="input-grounp topbar d-flex" style="max-width: 20rem">
+  <!-- <input type="text" class="form-control" id="inputfield" placeholder="Enter Candidate Name"> -->
+  <input type="search" class="form-control rounded-end-0"  id="inputfield" placeholder="Search Anything">
+  <span class="input-grounp-text border border-info rounded-end"><i class="bx bx-search text-info" style="font-size:2rem"></i></span>
+</div>
+<br>
+{% if poll.statu == "Scheduled" %}
+<div class="row">
+  <div class="col-8">
+    <details class="mb-3">
+      <summary class="btn btn-info">Add Candidate</summary><br>
+      <div class="d-flex">
+        <form method="POST" action="{{url_for('polls.add_candidate',poll_id=poll.id)}}" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+          <div class="row">
+            <div class="form-group col-md-5">
+              {{ form.candidate_name.label }}<br>
+              {{ form.candidate_name(class='form-control') }}<br>
+              {% for error in form.candidate_name.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-5">
+              {{ form.post.label }}<br>
+              {{ form.post(class='form-control') }}<br>
+              {% for error in form.post.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-5">
+              {{ form.house.label }}<br>
+              {{ form.house(class='form-control') }}<br>
+              {% for error in form.house.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-5">
+              {{ form.party.label }}<br>
+              {{ form.party(class='form-control') }}<br>
+              {% for error in form.party.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-5">
+              {{ form.gender.label }}<br>
+              {{ form.gender(class='form-control') }}<br>
+              {% for error in form.gender.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-5">
+              {{ form.slogan.label }}<br>
+              {{ form.slogan(class='form-control') }}<br>
+              {% for error in form.slogan.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-7">
+              {{ form.logo.label }}<br>
+              {{ form.logo(class='form-control') }}<br>
+              {% for error in form.logo.errors %}
+              <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            </div>
+            <div class="form-group col-md-7 mt-4">
+              {{ form.submit(class='btn btn-info') }}
+            </div>
+          </div>
+        </form>
+      </div>
+    </details>
+  </div>
+  <div class="col">
+    <div class="align-end">
+      <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#clear-all-modal">
+        <i class="bx bx-x" style="font-size: 1.5rem"></i> 
+        Clear All
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+<div class="d-flex w-100 overflow-auto">
+<table class="table table-striped table-dark restable w-100" id="student_table">
+    <thead>
+    <tr>
+      <th scope="col">Sl.No</th>
+      <th scope="col">Candidate Name</th>
+      <th scope="col">Party</th>
+      <th scope="col">Post</th>
+      <th scope="col">Slogan</th>
+      <th scope="col">House</th>
+      <th scope="col">Gender</th>
+      {% if poll.statu == "Scheduled" %}
+      <th scope="col">Delete</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody id="student_table_body">
+    {% for candidate in candidates %}
+    <!-- {if not student.house and not student.gender%} -->
+    <form action="" method="post">
+      <tr>
+        <td scope="row">{{loop.index}}</td>
+        <td scope="row">{{candidate.full_name}}</td>
+        <td class="align-middle">
+          {{candidate.party}}
+        </td>
+        <td class="align-middle">
+          {{candidate.post}}
+        </td>
+        <td class="align-middle text-truncate">
+          {{candidate.slogan}}
+        </td>
+        <td class="align-middle">{{candidate.house}}</td>
+        <td class="align-middle">
+          {{candidate.gender}}
+        </td>
+        {% if poll.statu == "Scheduled" %}
+        <td class="align-end"><a  href="{{url_for('polls.delete_candidate',poll_id=poll.id,c_id=candidate.id)}}"><i class="bx bx-x text-danger" style="font-size: 2rem"></i></a></td>
+        {% endif %}
+      </tr>
+    </form>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</form>
+{% else %}
+<center style="margin-top: 7rem;">
+  <div class="display-1 border border-info rounded">
+    No Candidates<br> Yet !!!
+  </div>
+</center>
+
+{% endif %}
+<!-- Modal -->
+<div class="modal fade" id="clear-all-modal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h1 class="modal-title text-danger fs-5" id=""><center>Sure you want to proceed with the Deletion ?<br>All candidates will cleared pemanently !</center></h1>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-info" data-bs-dismiss="modal">Cancel</button>
+        <a href="{{url_for('polls.delete_all_candidates',poll_id=poll.id)}}" class="btn btn-danger">proceed</a>
+      </div>
+    </div>
+  </div>
+</div>
+{%endblock viewer %}

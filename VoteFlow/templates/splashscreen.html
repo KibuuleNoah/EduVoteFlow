@@ -1,9 +1,31 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 
 <!-- Main Body Code -->
 {% block content %}
     <div class="logo">
         <img src="https://img.icons8.com/color/96/000000/elections.png">
+    </div>
+     <style>
+        .splash-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .splash-content {
+            max-width: 600px;
+        }
+    </style>
+    <div class="splash-container">
+        <div class="splash-content">
+            <h1 class="display-4">Welcome to Vote Flow</h1>
+            <p class="lead">The ultimate platform for your school voting needs.</p>
+            <hr class="my-4 mx-5" style="border-color: white;">
+            <p>Ready to cast your vote and make a difference?</p>
+            <a class="btn btn-outline-info btn-lg" href="home.html" role="button">Get Started</a>
+        </div>
     </div>
 {% endblock content %}
 
@@ -11,7 +33,7 @@
 {% block scripts %}
     <script>
         window.onload = function() {
-            setTimeout(()=> window.location = "{{url_for('users.school_login')}}", 5000);
+            setTimeout(()=> window.location = "{{url_for('auth.school_login')}}", 5000);
         }
     </script>
 {% endblock scripts%}

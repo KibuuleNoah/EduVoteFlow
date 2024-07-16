@@ -1,10 +1,9 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 
 <!-- Main Body Code -->
 {% block content %}
 <!-- <img src="{{url_for('static', filename='DataStore/SchoolLogo/default.svg')}}" alt="" id="logo"> -->
 <div class="d-flex justify-content-center">
-
   <form class="p-2" method="POST" action="" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
@@ -97,7 +96,7 @@
     <div>
       <center>
         <small class="text-muted">
-          Already Have An Account? <a class="ml-2" href="{{ url_for('users.school_login') }}">Log In</a>
+          Already Have An Account? <a class="ml-2" href="{{ url_for('auth.school_login') }}">Log In</a>
         </small>
       </center>
 
@@ -105,17 +104,3 @@
   </form>
 </div>
 {% endblock content %}
-
-<!-- Additional JavaScript Code -->
-{% block lastscripts %}
-{% endblock lastscripts%}
-
-<!-- Additional CSS Code -->
-{% block style %}
-    <style type="text/css">
-    body{
-        background-color: rgb(16,16,16);
-        color: white;
-    }
-    </style>
-{% endblock style%}

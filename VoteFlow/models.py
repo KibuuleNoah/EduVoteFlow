@@ -1,33 +1,52 @@
 # Imports
 from datetime import datetime
 from flask import current_app
-from VoteFlow import db, school_login_manager
+from VoteFlow import db, login_manager
 from flask_login import UserMixin
 
 
 # Initiate Login Managers
-@school_login_manager.user_loader
+# @login_manager.user_loader
+# def load_user(user_id):
+#     s = Student.query.get(int(user_id))
+#     if s:
+#         return s
+#
+#     return School.query.get(int(user_id))
+
+
+@login_manager.user_loader
 def load_user(user_id):
-    return School.query.get(int(user_id))
+    user = User.query.get(int(user_id))
+    print("USER_ID:", user_id)
+    print("USER_QUERIED:", user_id)
+    if not user:
+        return None
+
+    if user.user_type == "student":
+        return Student.query.get(user.user_id)
+    elif user.user_type == "school":
+        return School.query.get(user.user_id)
+
+    return None
 
 
 class School(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     admin_username = db.Column(db.String, unique=True, nullable=False)
-    schoolname = db.Column(db.String, unique=True, nullable=False)
-    school_abbr = db.Column(db.String, unique=True, nullable=False)
+    name = db.Column(db.String, unique=True, nullable=False)
+    abbr = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, unique=True, nullable=False)
     school_logo = db.Column(db.String, nullable=False)
+    polls = db.relationship("Poll")
 
     def __repr__(self):
-        return f"School('{self.schoolname}', '{self.school_abbr}', '{self.admin_username}')"
+        return f"School('{self.name}', '{self.abbr}', '{self.admin_username}')"
 
 
-class Student(db.Model):
+class Student(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    school = db.Column(db.String, nullable=False)
-    poll = db.Column(db.String, nullable=False)
     full_name = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
@@ -37,15 +56,15 @@ class Student(db.Model):
     gender = db.Column(db.String, nullable=True)
     house = db.Column(db.String, nullable=True)
     voted = db.Column(db.Boolean)
+    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
 
     def __repr__(self):
-        return f"Student('{self.school}', '{self.full_name}')"
+        return f"Student('{self.school_id}', '{self.full_name}')"
 
 
-class Nominee(db.Model):
+class Candidate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    school = db.Column(db.String, nullable=False)
-    poll = db.Column(db.String, nullable=False)
     full_name = db.Column(db.String, nullable=False)
     post = db.Column(db.String, nullable=False)
     house = db.Column(db.String, nullable=True)
@@ -54,21 +73,38 @@ class Nominee(db.Model):
     logo = db.Column(db.String, nullable=True, default="default.jpg")
     slogan = db.Column(db.String, nullable=False)
     votes = db.Column(db.Integer)
+    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
+
+    @property
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "full_name": self.full_name,
+            "post": self.post,
+            "house": self.house,
+            "gender": self.gender,
+            "logo": self.logo,
+            "slogan": self.slogan,
+        }
 
 
 class Poll(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    host = db.Column(db.String, nullable=False)
-    poll_name = db.Column(db.String, nullable=False)
-    poll_type = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
     # election_date = db.Column(db.String, nullable=False)
     houses = db.Column(db.PickleType, nullable=True)
-    positions = db.Column(db.PickleType, nullable=False)
+    posts = db.Column(db.PickleType, nullable=False)
     year = db.Column(db.String, nullable=False)
     status = db.Column(db.String, nullable=False)
+    total_votes = db.Column(db.Integer, default=0)
+    total_voted = db.Column(db.Integer, default=0)
+    students = db.relationship("Student")
+    candidates = db.relationship("Candidate")
+    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
 
     def __repr__(self):
-        return f"Poll('{self.poll_name}', '{self.host}', '{self.year}')"
+        return f"Poll('{self.name}', '{self.year}')"
 
 
 class FlaggedStudent(db.Model):
@@ -78,10 +114,17 @@ class FlaggedStudent(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
 
 
-class Results(db.Model):
+class CandidateResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    school = db.Column(db.String, nullable=False)
-    poll = db.Column(db.String, nullable=False)
-    full_name = db.Column(db.String, nullable=False)
-    post = db.Column(db.String, nullable=False)
+    candidate_id = db.Column(db.Integer, db.ForeignKey("candidate.id"))
     votes = db.Column(db.Integer)
+    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_type = db.Column(db.String, nullable=False)
+    user_id = db.Column(
+        db.Integer, nullable=False
+    )  # This references either Student or School ID
