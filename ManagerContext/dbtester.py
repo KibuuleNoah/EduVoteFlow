@@ -1,5 +1,5 @@
-from VoteFlow import create_app, db
-from VoteFlow.models import Poll, Student, FlaggedStudent, Candidate
+from EduVoteFlow import create_app, db
+from EduVoteFlow.models import Poll, Student, FlaggedStudent, Candidate
 import pprint
 
 app = create_app()

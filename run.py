@@ -1,4 +1,4 @@
-from VoteFlow import create_app
+from EduVoteFlow import create_app
 
 app = create_app()
 

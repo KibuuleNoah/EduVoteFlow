@@ -1,4 +1,4 @@
-# The VoteFlow Project
+# The EduVoteFlow Project
 
 A Flask based Voting Platform built specifically for school, college and minor institutions. It has a rich UI and a comprehensive system of voting options that enable you to customize your voting procedure based on your specific needs.
 
@@ -39,4 +39,4 @@ I used Voteflow to run my School Cabinet Election for the year 2019. It was a ma
 
 # Here is the Felicitation Certificate
 
-![](https://github.com/synapsecode/VoteFlow/blob/main/ExampleVotingData/felit.jpg)
+![](https://github.com/synapsecode/EduVoteFlow/blob/main/ExampleVotingData/felit.jpg)
