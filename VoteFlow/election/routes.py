@@ -15,8 +15,10 @@ from flask import (
 from VoteFlow.models import School, Poll, Student, Candidate
 from VoteFlow.election.forms import StudentLogin
 from flask_login import login_required, current_user
+from sqlalchemy import func
 from VoteFlow import db
 from VoteFlow.auth.utils import studentloginrequired
+from VoteFlow.polls.utils import get_opposed_candidates
 
 # Register this Page as a Blueprint
 election = Blueprint("election", __name__)
@@ -95,7 +97,7 @@ def voting_page(school_id, poll_id, s_id):
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
     if not poll:
         abort(404)
-    candidates = poll.candidates
+    candidates = get_opposed_candidates(poll.id, school.id).all()
 
     # if request.method == "POST":
     #     candidate_id = request.form.get("")

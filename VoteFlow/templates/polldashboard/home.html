@@ -66,6 +66,14 @@
             </div>
           </div>
         </div>
+        <div class="col-md-3">
+          <div class="card bg-dark text-white text-center mb-4">
+            <div class="card-body">
+              <h4>Voted Students</h4>
+              <h3>{{poll.total_voted}}</h3>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
     <!-- Top 5 Candidates Section -->
@@ -76,17 +84,21 @@
           <tr>
             <th>Name</th>
             <th>Position</th>
-            <th>Status</th>
-            <th>votes</th>
+            <th>Grade</th>
+            <th>Gender</th>
+            <th>Votes</th>
           </tr>
         </thead>
         <tbody>
+          {% for candidate in top_candidates  %}
           <tr>
-            <td>John Doe</td>
-            <td>President</td>
-            <td>Approved</td>
-            <td>225</td>
+            <td>{{candidate.full_name}}</td>
+            <td>{{candidate.post}}</td>
+            <td>....</td>
+            <td>{{candidate.gender}}</td>
+            <td>{{candidate.votes}}</td>
           </tr>
+          {% endfor %}
         </tbody>
       </table>
     </section>
@@ -99,20 +111,21 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Position</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>Position</th> 
+            <th>Grade</th>
+            <th>Gender</th>
           </tr>
         </thead>
         <tbody>
+          {% for candidate in unopposed  %}
+          
           <tr>
-            <td>John Doe</td>
-            <td>President</td>
-            <td>Unopposed</td>
-            <td>
-              lorem
-            </td>
+            <td>{{candidate.full_name}}</td>
+            <td>{{candidate.post}}</td>
+            <td>....</td>
+            <td>{{candidate.gender}}</td>
           </tr>
+          {% endfor %}
         </tbody>
       </table>
     </section>

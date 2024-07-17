@@ -34,7 +34,7 @@
     <header class="header">
       <div class="header__container">
         <img
-          src="{{url_for('static',filename='DataStore/SchoolLogo/TS.jpg')}}"
+          src="{{url_for('static',filename=school.school_logo)}}"
           alt=""
           class="header__img"
         />
@@ -53,7 +53,7 @@
               <div class="col-1 m-0 p-0">
                 <i class="bx bx-chevron-right" style="font-size: 1.3rem"></i>
               </div>
-              <div class="col-5 text-truncate text-break">
+              <div class="col-4 text-truncate text-break">
                 {{ dash_location }}
               </div>
             </div>

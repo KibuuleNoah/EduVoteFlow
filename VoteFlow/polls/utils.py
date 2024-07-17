@@ -129,15 +129,36 @@ def get_poll_link(school_id: int, poll_id: int):
     )
 
 
-def get_unopposed_candidates(db):
+def get_unopposed_candidates(poll_id: int, school_id: int):
     unopposed_candidates = (
-        db.session.query(Candidate)
+        Candidate.query.filter_by(poll_id=poll_id, school_id=school_id)
         .group_by(Candidate.post)
         .having(func.count(Candidate.id) == 1)
-        .all()
+        # .all()
     )
 
     return unopposed_candidates
+
+    # def get_unopposed_candidates(db):
+    #     unopposed_candidates = (
+    #         db.session.query(Candidate)
+    #         .group_by(Candidate.post)
+    #         .having(func.count(Candidate.id) == 1)
+    #         .all()
+    #     )
+
+    return unopposed_candidates
+
+
+def get_opposed_candidates(poll_id, school_id):
+    opposed_candidates = (
+        Candidate.query.filter_by(poll_id=poll_id, school_id=school_id)
+        .group_by(Candidate.post)
+        .having(func.count(Candidate.id) > 1)
+        # .all()
+    )
+
+    return opposed_candidates
 
 
 def save_candidates(

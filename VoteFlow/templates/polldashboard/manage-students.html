@@ -49,7 +49,7 @@ body{
   <span class="input-grounp-text border border-info rounded-end"><i class="bx bx-search text-info" style="font-size:2rem"></i></span>
 </div>
 <br>
-{% if poll.statu == "Scheduled" %}
+{% if poll.status == "Scheduled" %}
 <div class="row">
   <div class="col-8">
 <details class="mb-3">
@@ -131,7 +131,7 @@ body{
       <th scope="col">Roll No.</th>
       <th scope="col">Gender</th>
       <th scope="col">House</th>
-      {% if poll.statu == "Scheduled" %}
+      {% if poll.status == "Scheduled" %}
       <th scope="col">Delete</th>
       {% endif %}
     </tr>
@@ -164,7 +164,7 @@ body{
         <td class="align-middle">
           {{student.house}}
         </td>
-        {% if poll.statu == "Scheduled" %}
+        {% if poll.status == "Scheduled" %}
         <td><a class="danger" href="{{url_for('polls.delete_student',poll_id=poll.id,s_id=student.id)}}"><i class="bx bx-x text-danger" style="font-size: 2rem"></i></a></td>
         {% endif %}
       </tr> 

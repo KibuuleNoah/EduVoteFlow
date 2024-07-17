@@ -38,6 +38,7 @@ from .utils import (
     extract_excel_data,
     flag_duplicate_usernames,
     active_sched_poll_required,
+    get_opposed_candidates,
     get_unopposed_candidates,
     get_poll_link,
     save_candidates,
@@ -133,14 +134,25 @@ def dashboard_home(poll_id):
 
     len_candidates = len(poll.candidates)
     len_students = len(poll.students)
-    print(school)
-    print("GGGH ", get_unopposed_candidates(db))
+
+    # All unopposed candidates from the current poll
+    unopposed = get_unopposed_candidates(poll.id, school.id).all()
+    # Top candidates with many votes
+    top_candidates = (
+        get_opposed_candidates(poll.id, school.id)
+        .order_by(Candidate.votes.desc())
+        .limit(5)
+        .all()
+    )
+
     return render_template(
         "polldashboard/home.html",
         title=poll.name,
         school=school,
         dash_location="Home",
         poll=poll,
+        top_candidates=top_candidates,
+        unopposed=unopposed,
         status=poll.status,
         link=link,
         len_cand=len_candidates,
@@ -172,9 +184,7 @@ def add_students(poll_id):
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
     form = AddStudentsForm()
-    loaded_students = (
-        poll.students
-    )  # Student.query.filter_by(school=school.abbr, poll=poll.id).all()
+    loaded_students = poll.students
     flagged = []
     if form.validate_on_submit():
         studentMetadata = []
