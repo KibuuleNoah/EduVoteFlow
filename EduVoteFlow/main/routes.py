@@ -11,7 +11,8 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def splash_screen():
-    return render_template("splashscreen.html", title="EduVoteFlow")
+    return render_template("election/congrats.html", title="EduVoteFlow")
+    # return render_template("splashscreen.html", title="EduVoteFlow")
 
 
 @main.route("/about")

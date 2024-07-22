@@ -1,0 +1,7 @@
+{% extends "errors/base.html" %} {% block title %}401 Unauthorized{% endblock %}
+{% block content %}
+<i class="bx bx-shield-quarter error-icon"></i>
+<h1 class="display-4">401 Unauthorized</h1>
+<p class="lead">Sorry, you are not authorized to access this page.</p>
+<a href="{{url_for('auth.auth_home')}}" class="btn btn-outline-info btn-lg">Back To Auth</a>
+{% endblock %}

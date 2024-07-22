@@ -1,4 +1,5 @@
 # imports
+import zipfile
 from flask import (
     abort,
     render_template,
@@ -8,10 +9,14 @@ from flask import (
     redirect,
     url_for,
     jsonify,
-    current_app,
     send_from_directory,
 )
+from flask import current_app as cur_app
 from flask_wtf.csrf import os
+import openpyxl
+from EduVoteFlow.auth.utils import get_img_extension, schoolloginrequired
+from EduVoteFlow.election.routes import activepollrequired
+from EduVoteFlow.election.utils import prepare_candidates
 from EduVoteFlow.models import (
     School,
     Poll,
@@ -32,6 +37,7 @@ from EduVoteFlow.polls.forms import (
     EditFlaggedUsernameForm,
 )
 import io
+
 from .utils import (
     created_student_password,
     created_student_username,
@@ -39,13 +45,18 @@ from .utils import (
     flag_duplicate_usernames,
     active_sched_poll_required,
     get_opposed_candidates,
+    get_schpolldir_path,
     get_unopposed_candidates,
     get_poll_link,
     save_candidates,
     created_student_user,
+    scheduledpollrequired,
+    candidates_rank,
+    test_dict,
 )
 from werkzeug.utils import secure_filename
-from xlwt import Workbook
+from openpyxl import Workbook
+import shutil
 
 # Register this Page as a Blueprint
 polls = Blueprint("polls", __name__)
@@ -54,7 +65,7 @@ polls = Blueprint("polls", __name__)
 
 
 @polls.route("/", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 def home():
     form = CreatePollForm()
     if form.is_submitted():
@@ -81,49 +92,48 @@ def home():
     # return redirect(url_for("polls.polls-home", school_abbr=current_user.abbr))
 
 
-@polls.route("/createpoll", methods=["GET", "POST"])
-@login_required
+@polls.route("/createpoll", methods=["POST"])
+@schoolloginrequired
 def create_poll():
-    form = CreatePollForm()
-    if form.validate_on_submit():
-        # Get Data
-        poll_name, houses = (
-            request.form["name"],
-            request.form["houses"],
-        )
-        posts, year = request.form["posts"], request.form["year"]
-        # Process Data
-        posts_splitted = [x.rstrip() for x in posts.split(",")]
-        houses_splitted = [x.rstrip() for x in houses.split(",")]
-
-        # Add Data to Database
-        new_poll = Poll(
-            school_id=current_school.id,
-            name=poll_name,
-            houses=houses_splitted,
-            posts=posts_splitted,
-            year=year,
-            status="Scheduled",
-        )
-        db.session.add(new_poll)
-        db.session.commit()
-
-        # Generate Logo Directory
-        import os
-
-        path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
-        poll = Poll.query.filter_by(name=poll_name, school_id=current_school.id).first()
-        os.mkdir(f"{path}/{current_school.abbr}/{poll.id}")
-
-        flash(f"Successfully Created Poll '{poll_name}'", "success")
-        return redirect(url_for("polls.home"))
-    return render_template(
-        "createpoll.html", title="Create Poll", form=form, nocontainer=True
+    # form = CreatePollForm()
+    # if form.validate_on_submit():
+    # Get Data
+    poll_name, houses = (
+        request.form["name"],
+        request.form["houses"],
     )
+    posts, year = request.form["posts"], request.form["year"]
+    # Process Data
+    posts_splitted = [x.rstrip() for x in posts.split(",")]
+    houses_splitted = [x.rstrip() for x in houses.split(",")]
+
+    # Add Data to Database
+    new_poll = Poll(
+        school_id=current_school.id,
+        name=poll_name,
+        houses=houses_splitted,
+        posts=posts_splitted,
+        year=year,
+        status="Scheduled",
+    )
+    db.session.add(new_poll)
+    db.session.commit()
+
+    # Generate Logo Directory
+    import os
+
+    path = f"{cur_app.config['APP_PATH']}/{cur_app.config['APP_NAME']}{url_for('static', filename='DataStore')}"
+    os.mkdir(f"{path}/{current_school.abbr}{current_school.id}/{new_poll.id}")
+
+    flash(f"Successfully Created Poll '{poll_name}'", "success")
+    return redirect(url_for("polls.home"))
+    # return render_template(
+    #     "createpoll.html", title="Create Poll", form=form, nocontainer=True
+    # )
 
 
 @polls.route("/<poll_id>/", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def dashboard_home(poll_id):
     school = current_school
@@ -144,7 +154,7 @@ def dashboard_home(poll_id):
         .limit(5)
         .all()
     )
-
+    print("POSTS", poll.posts)
     return render_template(
         "polldashboard/home.html",
         title=poll.name,
@@ -161,7 +171,7 @@ def dashboard_home(poll_id):
 
 
 @polls.route("/<poll_id>/settings", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def general_settings(poll_id):
     school = current_school
@@ -178,8 +188,8 @@ def general_settings(poll_id):
 
 
 @polls.route("/<poll_id>/addstudents", methods=["GET", "POST"])
-@login_required
-@active_sched_poll_required
+@schoolloginrequired
+@scheduledpollrequired
 def add_students(poll_id):
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
@@ -187,10 +197,15 @@ def add_students(poll_id):
     loaded_students = poll.students
     flagged = []
     if form.validate_on_submit():
-        studentMetadata = []
-        studentDataFile = request.files["students"]
-        studentsBytes = io.BytesIO(studentDataFile.read())
-        students = extract_excel_data(studentsBytes)
+        students_metadata = []
+        student_data_file = request.files["students"]
+        students_bytes = io.BytesIO(student_data_file.read())
+        # check if the submitted file is a valid excel
+        try:
+            students = extract_excel_data(students_bytes)
+        except:
+            flash("The Students Excel File In Invaild", "danger")
+            return redirect(url_for("polls.add_students", poll_id=poll_id))
 
         # Add to Database
         created_students = []
@@ -228,7 +243,7 @@ def add_students(poll_id):
 
         # Generate Metadata for Every Student
         for student in set(poll.students):
-            studentMetadata.append(
+            students_metadata.append(
                 {
                     "id": student.id,
                     "full_name": student.full_name,
@@ -238,7 +253,7 @@ def add_students(poll_id):
             )
 
         # Initiate Flagging Procedure {DuplicateUsernames are not allowed and will be flagged}
-        flagged = flag_duplicate_usernames(studentMetadata)
+        flagged = flag_duplicate_usernames(students_metadata)
 
         # Add it to the Flagged DB
         flagged_students = []
@@ -285,7 +300,7 @@ def add_students(poll_id):
 
 
 @polls.route("/<poll_id>/editflaggedstudents", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def edit_flagged_students(poll_id):
     school = current_school
@@ -332,30 +347,37 @@ def edit_flagged_students(poll_id):
 
 
 @polls.route("/<poll_id>/addcandidates", methods=["GET", "POST"])
-@login_required
-@active_sched_poll_required
+@schoolloginrequired
+@scheduledpollrequired
 def add_candidates(poll_id):
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
     form = AddCandidatesForm()
-    loaded_candidates = (
-        poll.candidates
-    )  # Candidate.query.filter_by(school=school.abbr, poll=poll.id).all()
+    loaded_candidates = poll.candidates
+
     if form.validate_on_submit():
-        candidatesDataFile = request.files["candidates"]
-        logoBundle = request.files["candidates_logo"]
-        candidatesBytes = io.BytesIO(candidatesDataFile.read())
-        candidates = extract_excel_data(candidatesBytes)
+        candidates_file = request.files["candidates"]
+        logo_bundle = request.files["candidates_logo"]
+        candidates_bytes = io.BytesIO(candidates_file.read())
+        # check if candidates logo bundle is a valid zip
+        # if not zipfile.is_zipfile(io.BytesIO(request.files["candidates_logo"].read())):
+        #     flash("Candidates logo bundle is not a zip", "danger")
+        #     return redirect(url_for("polls.add_candidates", poll_id=poll_id))
+
+        try:
+            candidates = extract_excel_data(candidates_bytes)
+        except:
+            flash("Candidates Excel file is not a Valid", "danger")
+            return redirect(url_for("polls.add_candidates", poll_id=poll_id))
 
         # Save the Logo Bundle
-        import os
-
         filename = (
-            f"{school.abbr}-{poll.id}-candidates.{(logoBundle.filename).split('.')[1]}"
+            f"{school.abbr}-{poll.id}-candidates.{(logo_bundle.filename).split('.')[1]}"
         )
-        logoBundle.save(
-            os.path.join(current_app.config["UPLOAD_FOLDER"], secure_filename(filename))
+        logoszip_path = os.path.join(
+            cur_app.config["UPLOAD_FOLDER"], secure_filename(filename)
         )
+        logo_bundle.save(logoszip_path)
 
         # Get the Election Type
         posts = poll.posts
@@ -363,18 +385,17 @@ def add_candidates(poll_id):
         save_candidates(school, poll, posts, candidates, db)
 
         # Extract the Zip File
-        import zipfile
-        import os
+        poll_dir = get_schpolldir_path(
+            school, poll
+        )  # f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
 
-        path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
-
-        with zipfile.ZipFile(f"{path}/{filename}", "r") as zip_ref:
-            zip_ref.extractall(f"{path}/{school.id}/{poll_id}/")
+        with zipfile.ZipFile(logoszip_path, "r") as zip_ref:
+            zip_ref.extractall(poll_dir)
 
         # Add Files to Name
         import glob
 
-        for filepath in glob.iglob(f"{path}/{school.id}/{poll_id}/*.jpg"):
+        for filepath in glob.iglob(f"{poll_dir}/*.jpg"):
             img_name = os.path.basename(filepath).replace("_", " ")
             print(img_name)
             candidate = Candidate.query.filter_by(
@@ -382,15 +403,15 @@ def add_candidates(poll_id):
                 poll_id=poll_id,
                 school_id=school.id,
             ).first()
+            print(filepath)
             if candidate:
-                candidate.logo = os.path.basename(filepath)
+                static_path = "/static" + filepath.split("static")[-1]
+                candidate.logo = static_path
 
-            # else:
-            #     candidate.logo = os.path.basename(filepath)
-            db.session.commit()
+        db.session.commit()
 
         # Remove the Zip File
-        os.remove(f"{path}/{filename}")
+        os.remove(logoszip_path)
         flash("Successfully Uploaded all candidates!", "success")
         return render_template(
             "polldashboard/addcandidates.html",
@@ -423,7 +444,8 @@ def add_candidates(poll_id):
 
 
 @polls.route("/<poll_id>/addstudent", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
+@scheduledpollrequired
 def add_student(poll_id):
     school = current_school
     student = request.form
@@ -454,7 +476,7 @@ def add_student(poll_id):
 
     created_student_user(new_student, db)
     # Generate Metadata for Every Student
-    studentMetadata = {
+    student_metadata = {
         "id": new_student.id,
         "full_name": new_student.full_name,
         "username": new_student.username,
@@ -462,7 +484,7 @@ def add_student(poll_id):
     }
 
     # Initiate Flagging Procedure {DuplicateUsernames are not allowed and will be flagged}
-    flagged = flag_duplicate_usernames([studentMetadata])
+    flagged = flag_duplicate_usernames([student_metadata])
     if flagged:
         # Add it to the Flagged DB
         flagged_student = FlaggedStudent(
@@ -478,7 +500,7 @@ def add_student(poll_id):
 
 
 @polls.route("/<poll_id>/delete-student/<s_id>/")
-@login_required
+@schoolloginrequired
 def delete_student(poll_id, s_id):
     school = current_school
     student = Student.query.filter_by(
@@ -494,7 +516,7 @@ def delete_student(poll_id, s_id):
 
 
 @polls.route("/<poll_id>/delete-all-students/")
-@login_required
+@schoolloginrequired
 def delete_all_students(poll_id):
     school = current_school
     poll = Poll.query.filter_by(id=poll_id, school_id=school.id).first()
@@ -509,7 +531,7 @@ def delete_all_students(poll_id):
 
 
 @polls.route("/<poll_id>/delete-all-candidates/")
-@login_required
+@schoolloginrequired
 def delete_all_candidates(poll_id):
     school = current_school
     poll = Poll.query.filter_by(id=poll_id, school_id=school.id).first()
@@ -517,6 +539,9 @@ def delete_all_candidates(poll_id):
         for candidate in poll.candidates:
             db.session.delete(candidate)
         db.session.commit()
+        path = get_schpolldir_path(school, poll)
+        shutil.rmtree(path)
+        os.mkdir(path)
         flash(f"All candidates successfully cleared", "success")
     else:
         flash(f"failed to remove candidates", "danger")
@@ -524,7 +549,8 @@ def delete_all_candidates(poll_id):
 
 
 @polls.route("/<poll_id>/addcandidate", methods=["POST"])
-@login_required
+@schoolloginrequired
+@scheduledpollrequired
 def add_candidate(poll_id):
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
@@ -542,29 +568,51 @@ def add_candidate(poll_id):
         poll_id=poll.id,
     )
     db.session.add(new_candidate)
-    # db.session.commit()
-
-    img_name = f"{new_candidate.full_name}-{new_candidate.id}".replace(" ", "_").lower()
-    static_path = url_for(
-        "static", filename=f"DataStore/{school.id}/{poll_id}/{img_name}.jpg"
-    )
-    path = f"{os.getcwd()}/EduVoteFlow{static_path}"
-
-    candidate_logo.save(path + img_name)
-    new_candidate.logo = static_path
     db.session.commit()
+    # def save_image(school=None,poll=None,student=None,filename):
+    #             if school and poll and student:
+    #                 ...
+    #             elif school and poll:
+    #                 ...
+
+    if ext := get_img_extension(candidate_logo.filename):
+        img_name = f"{new_candidate.full_name}-{new_candidate.id}{ext}".replace(
+            " ", "_"
+        ).lower()
+        print("****", img_name, ext)
+        static_path = url_for(
+            "static",
+            filename=f"DataStore/{school.abbr}{school.id}/{poll_id}/{img_name}",
+        )
+        print("****", static_path)
+        path = f"{os.getcwd()}/EduVoteFlow{static_path}"
+        print("****", path)
+
+        candidate_logo.save(path)
+        new_candidate.logo = static_path
+        db.session.commit()
 
     return redirect(url_for("polls.manage_candidates", poll_id=poll_id))
 
 
 @polls.route("/<poll_id>/delete-candidate/<c_id>/")
-@login_required
+@schoolloginrequired
 def delete_candidate(poll_id, c_id):
     school = current_school
     candidate = Candidate.query.filter_by(
         school_id=school.id, poll_id=poll_id, id=c_id
     ).first()
     if candidate:
+        logo_path = candidate.logo
+        # Check is candidate doesn't have a default logo
+        if logo_path.split("/")[-1] != "default.jpg":
+            # get full path to candidate's logo
+            full_path = (
+                cur_app.config["APP_PATH"]
+                + f"/{cur_app.config['APP_NAME']}"
+                + logo_path
+            )
+            os.remove(full_path)
         db.session.delete(candidate)
         db.session.commit()
         flash(f"Candidate {candidate.full_name} successfully removed", "success")
@@ -574,7 +622,7 @@ def delete_candidate(poll_id, c_id):
 
 
 @polls.route("/<poll_id>/startelection", methods=["GET"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def start_election(poll_id):
     school = current_school
@@ -601,118 +649,105 @@ def start_election(poll_id):
     return redirect(url_for("polls.dashboard_home", poll_id=poll.id))
 
 
-@polls.route("/<poll_id>/deletepoll", methods=["GET", "POST"])
-@login_required
+@polls.route("/<poll_id>/deletepoll")
+@schoolloginrequired
 @active_sched_poll_required
 def delete_poll(poll_id):
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
-    if request.method == "POST":
-        # Delete Students
-        [db.session.delete(s) for s in poll.students]
-        # Delete Candidates
-        [db.session.delete(n) for n in poll.candidates]
-        # Delete Poll
-        db.session.delete(poll)
-        db.session.commit()
-        flash(f"Successfully Deleted Poll ({poll.name})", "success")
-        return redirect(url_for("polls.home"))
-    return render_template(
-        "polldashboard/deletepoll.html",
-        title=poll.name,
-        dash_location="Close-Poll",
-        school=school,
-        poll=poll,
-    )
+    # Delete Students
+    [db.session.delete(s) for s in poll.students]
+    # Delete Candidates
+    [db.session.delete(n) for n in poll.candidates]
+    # Delete Poll Dir in static
+    path = get_schpolldir_path(school, poll)
+    shutil.rmtree(path)
+    # Delete Poll
+    db.session.delete(poll)
+    db.session.commit()
+    flash(f"Successfully Deleted Poll ({poll.name})", "success")
+    return redirect(url_for("polls.home"))
+
+
+# @polls.route("/<poll_id>/results", methods=["GET", "POST"])
+# @schoolloginrequired
+# @activepollrequired
+# def results(poll_id):
+#     school = current_school
+#     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
+#     if request.method == "POST":
+#         poll.status = "Archived"
+#         all_results = []
+#         for post in poll.posts:
+#             candidates = poll.candidates
+#             votes = [x.votes for x in candidates]
+#             winner = candidates[votes.index(max(votes))]
+#             all_results.append(
+#                 CandidateResult(
+#                     school_id=school.id,
+#                     poll_id=poll_id,
+#                     candidate_id=winner.id,
+#                     votes=winner.votes,
+#                 )
+#             )
+#         db.session.bulk_save_objects(all_results)
+#         db.session.commit()
+#         for winner in CandidateResult.query.filter_by(
+#             school_id=school.id, poll_id=poll_id
+#         ):
+#             print(f"{winner.post} -> {winner.full_name}: {winner.votes}")
+#
+#         # TODO: DELETE candidateS
+#         # TODO: DELETE STUDENTS
+#         return redirect(
+#             url_for(
+#                 "polls.results_page",
+#                 poll_id=poll_id,
+#             )
+#         )
+#
+#     return render_template(
+#         "polldashboard/results.html",
+#         title=poll.name,
+#         school=school,
+#         dash_location="Results",
+#         poll=poll,
+#     )
 
 
 @polls.route("/<poll_id>/results", methods=["GET", "POST"])
-@login_required
-@active_sched_poll_required
+@schoolloginrequired
 def results(poll_id):
+
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
-    if request.method == "POST":
+    if poll.status != "Archived":
         poll.status = "Archived"
-        all_results = []
-        for post in poll.posts:
-            candidates = poll.candidates
-            votes = [x.votes for x in candidates]
-            winner = candidates[votes.index(max(votes))]
-            all_results.append(
-                CandidateResult(
-                    school_id=school.id,
-                    poll_id=poll_id,
-                    candidate_id=winner.id,
-                    votes=winner.votes,
-                )
-            )
-        db.session.bulk_save_objects(all_results)
         db.session.commit()
-        for winner in CandidateResult.query.filter_by(
-            school_id=school.id, poll_id=poll_id
-        ):
-            print(f"{winner.post} -> {winner.full_name}: {winner.votes}")
-
-        # TODO: DELETE candidateS
-        # TODO: DELETE STUDENTS
-        return redirect(
-            url_for(
-                "polls.results_page",
-                poll_id=poll_id,
-            )
-        )
+    opposed = get_opposed_candidates(poll.id, school.id)
+    unopposed = get_unopposed_candidates(poll.id, school.id)
+    candidates = prepare_candidates(opposed.all())
+    cand_rank = candidates_rank(candidates)
+    len_candidates = len(poll.candidates)
+    len_students = len(poll.students)
 
     return render_template(
         "polldashboard/results.html",
-        title=poll.name,
+        title="Results",
         school=school,
-        dash_location="Results",
         poll=poll,
+        dash_location="Results",
+        unopposed_cands=unopposed,
+        winners=cand_rank["winners"],
+        losers=cand_rank["losers"],
+        results=cand_rank["res_obj"],
+        len_cand=len_candidates,
+        len_stud=len_students,
     )
 
 
-@polls.route("/<poll_id>/resultspage", methods=["GET", "POST"])
-@login_required
-def results_page(poll_id):
-    school = current_school
-    poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
-    if poll.status == "Archived":
-        results = CandidateResult.query.filter_by(
-            school_id=school.id, poll_id=poll_id
-        ).all()
-        stats = (
-            len(
-                Student.query.filter_by(
-                    voted=True, school_id=school.id, poll_id=poll.id
-                ).all()
-            ),
-            len(poll.students),
-        )
-        print(results)
-        return render_template(
-            "polldashboard/resultsdisplay.html",
-            title="Results",
-            res=results,
-            polltype="A2A",
-            stats=stats,
-            school=school,
-            dash_location="Results",
-            poll_id=poll_id,
-        )
-    else:
-        flash("Cannot Declare Results for an Active Poll", "danger")
-        return redirect(
-            url_for(
-                "polls.dashboard_home",
-                poll_id=poll_id,
-            )
-        )
-    return render_template("polldashboard/resultsdisplay.html", title="Results")
-
-
 @polls.route("/<poll_id>/manage-students", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def manage_students(poll_id):
     form = AddStudentForm()
@@ -763,7 +798,7 @@ def manage_students(poll_id):
 
 
 @polls.route("/<poll_id>/manage-candidates", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 @active_sched_poll_required
 def manage_candidates(poll_id):
     form = AddCandidateForm()
@@ -784,53 +819,39 @@ def manage_candidates(poll_id):
 
 
 @polls.route("/<poll_id>/downloadelectionsummary", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 def downloadelectionsummary(poll_id):
     import os
 
     poll = Poll.query.filter_by(school_id=current_school.id, id=poll_id).first()
     candidates = poll.candidates
-    # Candidate.query.filter_by(school.id=school_abbr, poll=poll_id).all()
     wb = Workbook()
-    s = wb.add_sheet("Sheet 1")
+    ws = wb.active
+    ws.title = "Sheet 1"
 
-    s.write(0, 0, "candidate_name")
-    s.write(0, 1, "post")
-    s.write(0, 2, "house")
-    s.write(0, 3, "gender")
-    s.write(0, 4, "votes")
+    ws.append(["candidate_name", "post", "house", "gender", "votes"])
 
-    for i, candidate in enumerate(candidates):
+    for candidate in candidates:
         full_name = candidate.full_name
-        post = None
-        if "A2A" == "GH-I2I":
-            post = candidate.post.split("-")[2][1:-1]
-        elif "A2A" == "G-I2I":
-            post = candidate.post.split("-")[1][1:-1]
+        post = candidate.post.split("-")[2][1:-1]
         house = candidate.house
         gender = candidate.gender
         votes = candidate.votes
 
-        s.write(i + 1, 0, str(full_name))
-        s.write(i + 1, 1, str(post))
-        if house == "ANY":
-            s.write(i + 1, 2, "")
-        else:
-            s.write(i + 1, 2, str(house))
-        s.write(i + 1, 3, str(gender))
-        s.write(i + 1, 4, int(votes))
+        ws.append([full_name, post, "" if house == "ANY" else house, gender, votes])
 
-    wb.save(
-        os.path.join(current_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-Summary.xls")
+    file_path = os.path.join(
+        cur_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-Summary.xlsx"
     )
+    wb.save(file_path)
     return send_from_directory(
-        os.path.join(current_app.config["UPLOAD_FOLDER"]),
-        filename=f"Poll-{poll_id}-Summary.xls",
+        os.path.join(cur_app.config["UPLOAD_FOLDER"]),
+        filename=f"Poll-{poll_id}-Summary.xlsx",
     )
 
 
 @polls.route("/<poll_id>/downloadabsenteevoterslist", methods=["GET", "POST"])
-@login_required
+@schoolloginrequired
 def download_absentee_voters_list(school_abbr, poll_id):
     import os
 
@@ -839,27 +860,23 @@ def download_absentee_voters_list(school_abbr, poll_id):
     ).all()
     poll = Poll.query.filter_by(id=poll_id).first()
     wb = Workbook()
-    s = wb.add_sheet("Sheet 1")
+    ws = wb.active
+    ws.title = "Sheet 1"
 
-    s.write(0, 0, "student_name")
-    s.write(0, 1, "grade")
-    s.write(0, 2, "section")
+    ws.append(["student_name", "grade", "section"])
 
-    for i, voter in enumerate(voters):
+    for voter in voters:
         full_name = voter.full_name
         grade = voter.grade
         section = voter.section
 
-        s.write(i + 1, 0, str(full_name))
-        s.write(i + 1, 1, str(grade))
-        s.write(i + 1, 2, str(section))
+        ws.append([full_name, grade, section])
 
-    wb.save(
-        os.path.join(
-            current_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-AbsenteeList.xls"
-        )
+    file_path = os.path.join(
+        cur_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-AbsenteeList.xlsx"
     )
+    wb.save(file_path)
     return send_from_directory(
-        os.path.join(current_app.config["UPLOAD_FOLDER"]),
-        filename=f"Poll-{poll_id}-AbsenteeList.xls",
+        os.path.join(cur_app.config["UPLOAD_FOLDER"]),
+        filename=f"Poll-{poll_id}-AbsenteeList.xlsx",
     )

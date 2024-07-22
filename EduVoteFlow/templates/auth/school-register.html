@@ -23,19 +23,6 @@
         {% endif %}
       </div>
       <div class="form-group">
-        {{ form.school_abbr.label(class="form-control-label") }}
-        {% if form.school_abbr.errors %}
-        {{ form.school_abbr(class="form-control form-control-lg is-invalid") }}
-        <div class="invalid-feedback">
-          {% for error in form.school_abbr.errors %}
-          <span>{{ error }}</span>
-          {% endfor %}
-        </div>
-        {% else %}
-        {{ form.school_abbr(class="form-control form-control-lg tb", placeholder="School Abbreviation") }}
-        {% endif %}
-      </div>
-      <div class="form-group">
         {{ form.school_logo.label(class="form-control-label") }}
         {{ form.school_logo(class="form-control tb") }}
       </div>

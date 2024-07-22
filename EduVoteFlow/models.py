@@ -5,16 +5,6 @@ from EduVoteFlow import db, login_manager
 from flask_login import UserMixin
 
 
-# Initiate Login Managers
-# @login_manager.user_loader
-# def load_user(user_id):
-#     s = Student.query.get(int(user_id))
-#     if s:
-#         return s
-#
-#     return School.query.get(int(user_id))
-
-
 @login_manager.user_loader
 def load_user(user_id):
     user = User.query.get(int(user_id))
@@ -70,9 +60,9 @@ class Candidate(db.Model):
     house = db.Column(db.String, nullable=True)
     party = db.Column(db.String, nullable=True)
     gender = db.Column(db.String, nullable=True)
-    logo = db.Column(db.String, nullable=True, default="default.jpg")
+    logo = db.Column(db.String, default="/static/DataStore/default.jpg")
     slogan = db.Column(db.String, nullable=False)
-    votes = db.Column(db.Integer)
+    votes = db.Column(db.Integer, default=0)
     school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
     poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
 
@@ -86,6 +76,7 @@ class Candidate(db.Model):
             "gender": self.gender,
             "logo": self.logo,
             "slogan": self.slogan,
+            "votes": self.votes,
         }
 
 

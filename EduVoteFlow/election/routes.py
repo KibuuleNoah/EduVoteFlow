@@ -1,4 +1,5 @@
 # imports
+from functools import wraps
 from flask import (
     abort,
     json,
@@ -19,46 +20,38 @@ from sqlalchemy import func
 from EduVoteFlow import db
 from EduVoteFlow.auth.utils import studentloginrequired
 from EduVoteFlow.polls.utils import get_opposed_candidates
+from .utils import prepare_candidates
 
 # Register this Page as a Blueprint
 election = Blueprint("election", __name__)
-
 # Simple Decorator to check for active polls only
-# def activepollrequired(func):
-# 	@wraps(func)
-# 	def func_wrapper(school_abbr, poll_id):
-# 		poll = Poll.query.filter_by(host=school_abbr, id=poll_id).first()
-# 		if(poll.status == 'Active'):
-# 			return func(school_abbr, poll_id)
-# 		else:
-# 			flash(f'The Poll ({poll.poll_name}) is currently not Active.', 'danger')
-# 			return redirect(url_for('polls.home', school_abbr=school_abbr))
-# 	return func_wrapper
 
 
-def prepare_candidates(candidates: list[Candidate]):
-    displayed_candidates = {}
-    print(candidates)
-    for candidate in candidates:
-        dict_candidate = candidate.to_dict
-        candidate_post = dict_candidate["post"]
-        if candidate_post in displayed_candidates:
-            displayed_candidates[candidate_post].append(dict_candidate)
+def activepollrequired(func):
+    @wraps(func)
+    def func_wrapper(school_id, poll_id, *args):
+        poll = Poll.query.get(int(poll_id))
+        if not poll:
+            abort(404)
+        elif poll.status == "Active":
+            return func(school_id, poll_id, *args)
         else:
-            displayed_candidates[candidate_post] = [dict_candidate]
-    return displayed_candidates
+            return render_template("election/not-active.html", poll_name=poll.name)
+
+    return func_wrapper
 
 
 @election.route("/cast-vote", methods=["POST"])
-@login_required
+# @login_required
 @studentloginrequired
+@activepollrequired
 def cast_vote(school_id, poll_id):
     candidate_id = int(json.loads(request.data)["candidateId"])
     print(candidate_id, poll_id)
     candidate = Candidate.query.filter_by(poll_id=poll_id, id=candidate_id).first()
+    poll = Poll.query.get(int(poll_id))
     print(candidate, "*" * 20)
-    if candidate:
-        poll = Poll.query.get(int(poll_id))
+    if candidate and poll:
         candidate.votes += 1
         poll.total_votes += 1
         db.session.commit()
@@ -85,11 +78,11 @@ def splash_screen(school_id, poll_id):
     )
 
 
-@election.route("/votingpage/<s_id>", methods=["GET", "POST"])
+@election.route("/votingpage/", methods=["GET", "POST"])
 # @login_required
 @studentloginrequired
-# @activepollrequired
-def voting_page(school_id, poll_id, s_id):
+@activepollrequired
+def voting_page(school_id, poll_id):
     school = School.query.get(school_id)
     current_student = current_user
     if not school:
@@ -110,9 +103,12 @@ def voting_page(school_id, poll_id, s_id):
     #         )
     #     )
 
+    print("OPPOSED", candidates)
     applicable_candidates = prepare_candidates(candidates)
+    with open("test.py", "w") as f:
+        f.write("d = " + str(applicable_candidates))
 
-    print(applicable_candidates)
+    print("PREPARED", applicable_candidates)
     return render_template(
         "election/voting.html",
         title="Election",

@@ -26,54 +26,59 @@
       rel="stylesheet"
       href="{{url_for('static',filename='css/sidebarsubmenus.css')}}"
     />
+    <style>
+      .bg-vis-dark {
+        background: rgba(0, 0, 0, 0.5);
+      }
+    </style>
 
     <title>{% block title%}{% endblock %}</title>
   </head>
   <body>
     <!--========== HEADER ==========-->
     <header class="header">
+      <div class="text-center text-info">{{school.name}}</div>
       <div class="header__container">
-        <img
-          src="{{url_for('static',filename=school.school_logo)}}"
-          alt=""
-          class="header__img"
-        />
-        <div class="">
-          <a class="navbar-brand" href="#">
-            <div class="row">
-              <div class="col-1">
-                <i
-                  class="bx bx-arrow-back text-info"
-                  style="padding-left: 2px; font-size: 1.4rem"
-                  id="arrow"
-                  onclick="window.history.back();"
-                ></i>
-              </div>
-              <div class="col-5 text-truncate text-break">{{school.name}}</div>
-              <div class="col-1 m-0 p-0">
-                <i class="bx bx-chevron-right" style="font-size: 1.3rem"></i>
-              </div>
-              <div class="col-4 text-truncate text-break">
-                {{ dash_location }}
-              </div>
+        <img src="{{school.school_logo}}" alt="" class="header__img" />
+        <!-- <div class="" style="width: 20rem"> -->
+        <div class="navbar-brand" style="width: 30rem" href="#">
+          <div class="row">
+            <div class="col-1">
+              <i
+                class="bx bx-arrow-back text-info"
+                style="padding-left: 2px; font-size: 1.4rem"
+                id="arrow"
+                onclick="window.history.back();"
+              ></i>
             </div>
-          </a>
-
-          <!-- <a class="navbar-brand" href="#" -->
-          <!--   > -->
-          <!--   <div class="col-3 text-truncate text-break"> -->
-          <!--     {{school.schoolname}} -->
-          <!--   </div> -->
-          <!--   &gt; -->
-          <!--   <span class="text-truncate text-break">{{ dash_location }}</span> -->
-          <!---->
-          <!-- </a -->
-          <!-- > -->
+            <div class="col-5 text-truncate text-break">{{poll.name}}</div>
+            <div class="col-1 m-0 p-0">
+              <i class="bx bx-chevron-right" style="font-size: 1.3rem"></i>
+            </div>
+            <div class="col-5 text-truncate text-break">
+              {{ dash_location }}
+            </div>
+          </div>
         </div>
+
+        <!-- <a class="navbar-brand" href="#" -->
+        <!--   > -->
+        <!--   <div class="col-3 text-truncate text-break"> -->
+        <!--     {{school.schoolname}} -->
+        <!--   </div> -->
+        <!--   &gt; -->
+        <!--   <span class="text-truncate text-break">{{ dash_location }}</span> -->
+        <!---->
+        <!-- </a -->
+        <!-- > -->
+        <!-- </div> -->
         <a href="#" class="header__logo">EduVoteFlow</a>
 
         <div class="header__toggle">
-          <i class="bx bx-menu" id="header-toggle"></i>
+          <i
+            class="bx bx-menu {% if poll.status == 'Archived' %}text-secondary{% endif %}"
+            id="{% if poll.status != 'Archived' %}header-toggle{% endif %}"
+          ></i>
         </div>
       </div>
     </header>
@@ -88,6 +93,7 @@
           </a>
 
           <div class="nav__list">
+            {% if poll.status != "Archived" %}
             <div class="nav__items">
               <h3 class="nav__subtitle">Profile</h3>
 
@@ -159,12 +165,15 @@
               </a>
               <a
                 class="nav__link {%if dash_location=='Results'%}active{%endif%}"
-                href="{{ url_for('polls.results',  poll_id=poll.id) }}"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#view-results-modal"
               >
                 <i class="bx bx-pie-chart-alt nav__icon"></i
                 ><span class="nav__name"> Election Results</span>
               </a>
             </div>
+            {% endif %}
           </div>
         </div>
 
@@ -193,6 +202,42 @@
       </div>
       {% block viewer %} {% endblock viewer %}
     </main>
+    <section class="container">
+      <div
+        class="modal fade"
+        id="view-results-modal"
+        tabindex="-1"
+        aria-labelledby=""
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content bg-dark">
+            <div class="modal-header">
+              <h3 class="modal-title text-warning fs-5" id="">
+                <center>
+                  Sure you want to view the results, After this action the
+                  <b>Election</b> in be Ended
+                </center>
+              </h3>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-outline-info"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+              <a
+                href="{{ url_for('polls.results',  poll_id=poll.id) }}"
+                class="btn btn-success"
+                >Proceed</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!--========== JQUERY JS ==========-->
     <script

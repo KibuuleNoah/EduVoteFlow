@@ -15,4 +15,4 @@ Werkzeug
 WTForms
 WTForms-Components
 xlrd
-xlwt
+openpyxl

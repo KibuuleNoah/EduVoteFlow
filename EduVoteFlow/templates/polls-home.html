@@ -31,7 +31,7 @@
                     {{ form.name(class="form-control form-control-lg tb", placeholder="Poll Name") }}
                     {% endif %}
                   </div>
-                                    <div class="form-group">
+                  <div class="form-group">
                     {{ form.houses.label(class="form-control-label", id="hlabel") }}
                     {% if form.houses.errors %}
                     {{ form.houses(class="form-control form-control-lg is-invalid") }}
@@ -81,27 +81,27 @@
     </div>
   </div>
 </div>
-<section>
+<section class="container">
   {% if activepolls or scheduledpolls or archivedpolls %}
   {% if activepolls %}
-  <h1 class="mt-5">Active Polls <sup class="text-secondary">({{ activepolls|length }})</sup></h1>
+  <h2 class="mt-5 text-info">Active Polls <sup class="text-secondary">({{ activepolls|length }})</sup></h2>
   <div class="pollbody">
     {% for poll in activepolls %}
     <div class="row">
       <div class="col-lg mb-2">
-        <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home', school_id=school.id, poll_id=poll.id)}}';">
-          <h2 class="card-title">{{poll['name']}}</h2>
+        <div class="card border border-success rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home', school_id=school.id, poll_id=poll.id)}}';">
+          <h2 class="card-title text-center text-palet">{{poll['name']}}</h2>
           <div class="d-flex justify-content-center m-3">
             {% if poll['status'] == 'Active' %}
-            <a href="{{url_for('election.splash_screen', school_id=school.id, poll_id=poll.id)}}" class="btn btn-primary my-2">Go To Election Page</a><br>
+            <a href="{{url_for('election.splash_screen', school_id=school.id, poll_id=poll.id)}}" class="btn btn-outline-info my-2">Go To Election Page</a><br>
             {% endif %}
           </div>
           <div class="row">
             <div class="col">
-              <b>{{poll['year']}}</b>
+              <b class="text-palet">{{poll['year']}}</b>
             </div>
             <div class="col d-flex justify-content-center">
-              <i>Active</i>
+              <i class="text-palet">Active</i>
             </div>
           </div>
         </div> 
@@ -113,19 +113,19 @@
   <br>
 
   {% if scheduledpolls %}
-  <h1 class="mt-5">Scheduled Polls <sup class="text-secondary">({{ scheduledpolls|length }})</sup></h1>
+  <h2 class="mt-5 text-info">Scheduled Polls <sup class="text-secondary">({{ scheduledpolls|length }})</sup></h2>
   <div class="poll-body">
     {% for poll in scheduledpolls %}
     <div class="row">
       <div class="col-lg mb-2">
         <div class="card border rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.dashboard_home',poll_id=poll.id)}}';">
-          <h2 class="card-title">{{poll['name']}}</h2>
+          <h2 class="card-title text-center text-palet">{{poll['name']}}</h2>
           <div class="row">
             <div class="col">
-              <b>{{poll['year']}}</b>
+              <b class="text-palet">{{poll['year']}}</b>
             </div>
             <div class="col d-flex justify-content-center">
-              <i>Scheduled</i>
+              <i class="text-palet">Scheduled</i>
             </div>
           </div>
         </div> 
@@ -137,19 +137,22 @@
   <br>
 
   {% if archivedpolls %}
-  <span class="sn">Archived Polls <span class="poll-len">({{ archivedpolls|length }})</span></span>
+  <h2 class="mt-5 text-info">Archived Polls <sup class="text-secondary">({{ archivedpolls|length }})</sup></h2>
   <div class="poll-body">
     {% for poll in archivedpolls %}
     <div class="row">
-      <div class="col-lg">
-        <div class="pollobject" onclick="window.location.href='{{url_for('polls.results_page', school_id=school.id, poll_id=poll.id)}}';">
-          <h2>{{poll['name']}}</h2>
-          <br>
-          {{poll['year']}}
-          <br>
-          Archived
-          <br>
-        </div>
+      <div class="col-lg mb-2">
+        <div class="card border border-warning rounded bg-dark p-2" onclick="window.location.href='{{url_for('polls.results', school_id=school.id, poll_id=poll.id)}}';">
+          <h2 class="text-palet text-center">{{poll['name']}}</h2>
+          <div class="row">
+            <div class="col">
+              <b class="text-palet">{{poll['year']}}</b>
+            </div>
+            <div class="col d-flex justify-content-center">
+              <i class="text-palet">Archived</i>
+            </div>
+          </div>
+        </div> 
       </div>
     </div>
     {% endfor %}
@@ -159,19 +162,12 @@
   {% else %}
   <div class='no-polls'>
     <center>
-      <h2>No Polls Available</h2>
+      <h2 class="text-warning">No Polls Available</h2>
     </center>
   </div>
   {% endif %}
+<button id="new-poll-btn" type="button" class="mdl-button mdl-button--fab fixed-bottom me-auto mb-4 mr-4 text-light" data-bs-toggle="modal" data-bs-target="#create-poll-modal" >+</button>
 </section>
-
-<button 
-       id="new-poll-btn"
-       type="button" 
-       class="mdl-button mdl-button--fab position-absolute text-light"
-       data-bs-toggle="modal" 
-       data-bs-target="#create-poll-modal"
-       >+</button>
 
 
 {% endblock content %}

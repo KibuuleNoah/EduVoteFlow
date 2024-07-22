@@ -41,13 +41,13 @@ class CreatePollForm(FlaskForm):
 
 
 class AddStudentsForm(FlaskForm):
-    students = FileField()
+    students = FileField(validators=[DataRequired()])
     submit = SubmitField("Upload DataFile")
 
 
 class AddCandidatesForm(FlaskForm):
-    candidates = FileField()
-    candidates_logo = FileField()
+    candidates = FileField(validators=[DataRequired()])
+    candidates_logo = FileField(validators=[DataRequired()])
     submit = SubmitField("Upload Data")
 
 

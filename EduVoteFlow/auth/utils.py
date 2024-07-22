@@ -1,23 +1,8 @@
-# import subprocess
-# import time
-# from PIL import Image
-# from resizeimage import resizeimage
-#
-# def img2svg(filename):
-# 	start = time.time()
-# 	try:
-# 		#Perform Vectorization
-# 		url = "https://www.vectorizer.io/api/v2/vectorize"
-# 		cmd = f"""curl $ curl --http1.1 -H 'Expect:' --data-binary "@{filename}" "{url}" > {filename.split('.')[0]}.svg """
-# 		out = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
-# 		print(f"Completed In: {int(time.time() - start)}s")
-# 		return {'status': 200, 'svg': f"{filename.split('.')[0]}.svg"}
-# 	except Exception as e:
-# 		return {'status': 500, 'errcode': str(e)}
-
 from functools import wraps
 from flask import abort
 from flask_login import current_user, login_required
+from flask_wtf.csrf import os
+from werkzeug.utils import secure_filename
 
 from EduVoteFlow.models import School, Student
 
@@ -42,3 +27,15 @@ def schoolloginrequired(func):
         return func(*args, **kwargs)
 
     return func_wrapper
+
+
+def abbr_str(text: str) -> str:
+    return "".join([t[0] for t in text.split()]).upper()
+
+
+def get_img_extension(img_name: str | None) -> str:
+    if not img_name:
+        return ""
+    ext = os.path.splitext(secure_filename(img_name))[1]
+    print("EXT", ext)
+    return ext

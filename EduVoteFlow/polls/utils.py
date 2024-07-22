@@ -1,8 +1,9 @@
 from flask import abort, flash, url_for, redirect
 from functools import wraps
 from flask_login import current_user
+from flask_wtf.csrf import os
 from sqlalchemy import func
-from EduVoteFlow.models import Candidate, Poll, School, Student, User
+from EduVoteFlow.models import Candidate, Poll, School, Student, User, db
 from openpyxl import load_workbook
 
 
@@ -105,18 +106,70 @@ def active_sched_poll_required(func):
     return func_wrapper
 
 
+def activepollrequired(func):
+    """
+    Active polls required
+    """
+
+    @wraps(func)
+    def func_wrapper(poll_id, *args):
+        poll = Poll.query.filter_by(school_id=current_user.id, id=poll_id).first()
+        if not poll:
+            abort(404)
+        if poll.status == "Active":
+            return func(poll_id, *args)
+        elif poll.status == "Scheduled":
+            flash(
+                "This Poll hasn't Started, This Action Can't be done on Scheduled Polls",
+                "danger",
+            )
+            return redirect(url_for("polls.dashboard_home", poll_id=poll_id))
+        else:
+            flash(
+                f"This Poll has been {poll.status}! It can't make the task",
+                "danger",
+            )
+            return redirect(url_for("polls.home"))
+
+    return func_wrapper
+
+
+def scheduledpollrequired(func):
+    """
+    Scheduled polls required
+    """
+
+    @wraps(func)
+    def func_wrapper(poll_id, *args):
+        poll = Poll.query.filter_by(school_id=current_user.id, id=poll_id).first()
+        if not poll:
+            abort(404)
+        if poll.status == "Scheduled":
+            return func(poll_id, *args)
+        elif poll.status == "Active":
+            flash("This Poll is Already Active,This Action Can't be done", "danger")
+            return redirect(url_for("polls.dashboard_home", poll_id=poll_id))
+        else:
+            flash(
+                f"This Poll has been {poll.status}! It can't make the task",
+                "danger",
+            )
+            return redirect(url_for("polls.home"))
+
+    return func_wrapper
+
+
 def add_record(candidate: dict, school_id: int, poll: Poll):
     candidate_objects = []
     new_candidate = Candidate(
         school_id=school_id,
         poll_id=poll.id,
         full_name=candidate["student_name"],
-        house="",
-        gender="",
-        post=f"[{candidate['post']}]",
-        logo=f"{candidate['student_name'].replace(' ', '_')}.jpg",
+        house=candidate["house"],
+        gender=candidate["gender"],
+        post=candidate["post"],
+        logo="",
         slogan=candidate["slogan"],
-        votes=0,
     )
     candidate_objects.append(new_candidate)
     return candidate_objects
@@ -151,13 +204,28 @@ def get_unopposed_candidates(poll_id: int, school_id: int):
 
 
 def get_opposed_candidates(poll_id, school_id):
-    opposed_candidates = (
-        Candidate.query.filter_by(poll_id=poll_id, school_id=school_id)
+    # poll = Poll.query.get(poll_id)
+    # print("CANDIDATES", poll.candidates)
+    # print()
+    # opposed_candidates = (
+    #     Candidate.query.filter_by(poll_id=poll_id, school_id=school_id)
+    #     .group_by(Candidate.post)
+    #     .having(func.count(Candidate.id) > 1)
+    #     # .all()
+    # )
+
+    # Subquery to find posts with more than one candidate
+    subquery = (
+        db.session.query(Candidate.post)
         .group_by(Candidate.post)
         .having(func.count(Candidate.id) > 1)
-        # .all()
+        .subquery()
     )
 
+    # Main query to get all candidates with non-unique posts
+    opposed_candidates = Candidate.query.filter(Candidate.post.in_(subquery)).filter_by(
+        poll_id=poll_id, school_id=school_id
+    )
     return opposed_candidates
 
 
@@ -170,3 +238,200 @@ def save_candidates(
                 db.session.bulk_save_objects(add_record(candidate, school.id, poll))
                 db.session.commit()
         print("-" * 30)
+
+
+def get_schpolldir_path(school: School, poll: Poll, sch_path: bool = False) -> str:
+    school_dir = f"{school.abbr}{school.id}"
+    poll_dir = f"{poll.id}"
+    if sch_path:
+        path = f"{os.getcwd()}/EduVoteFlow/static/DataStore/{school_dir}"
+    else:
+        path = f"{os.getcwd()}/EduVoteFlow/static/DataStore/{school_dir}/{poll_dir}"
+    return path
+
+
+sort_by_votes = lambda x: x["votes"]
+
+
+def posttotal_votecasts(candidates: list) -> int:
+    total = 0
+    for candidate in candidates:
+        total += candidate["votes"]
+    return total
+
+
+def candidates_percent(votes_casted: int, candidate: dict):
+    candidate_votes = candidate["votes"]
+    percentage = 0
+    if candidate_votes and votes_casted:
+        percentage = round((candidate_votes / votes_casted) * 100, 1)
+    candidate["percentage"] = percentage
+    return candidate
+
+
+def candidates_rank(ele_dict: dict):
+    res = {}
+    winners = []
+    losers = []
+    for post in ele_dict.keys():
+        sorted_candidates = sorted(ele_dict[post], key=sort_by_votes, reverse=True)
+        votes_casted = posttotal_votecasts(sorted_candidates)
+        sorted_candidates = [
+            candidates_percent(votes_casted, c) for c in sorted_candidates
+        ]
+        if post not in res:
+            res[post] = {
+                "votes_casted": votes_casted,
+                "winner_votes": 0,
+                "winners": [],
+                "losers": [],
+                "any_tie": False,
+                "any_voted": True,
+            }
+        res_post = res[post]
+        for idx, cand in enumerate(sorted_candidates):
+            # if all candidates have zero votes
+            if idx == 0 and cand["votes"] == 0:
+                res[post]["any_voted"] = False
+                res[post]["losers"].extend(sorted_candidates)
+                losers.extend(sorted_candidates)
+                break
+            # if muiltple candidates have the same max votes
+            elif res_post["winners"] and cand["votes"] == res_post["winner_votes"]:
+                res[post]["winners"].append(cand)
+                if not res_post["any_tie"]:
+                    res[post]["any_tie"] = True
+            # if thr current candidate is already a loser
+            elif res_post["winners"] and cand["votes"] < res_post["winner_votes"]:
+                res[post]["losers"].extend(sorted_candidates[idx:])
+                losers.extend(sorted_candidates[idx:])
+                break
+            else:
+                res[post]["winners"].append(cand)
+                if res_post["winner_votes"] == 0:
+                    res[post]["winner_votes"] = cand["votes"]
+        if not res[post]["any_tie"]:
+            winners.extend(res[post]["winners"])
+    return {"winners": winners, "losers": losers, "res_obj": res}
+
+
+test_dict = {
+    "p1": [
+        {
+            "id": 1,
+            "full_name": "John Doe",
+            "post": "p1",
+            "house": "H1",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello World!",
+            "votes": 0,
+        },
+        {
+            "id": 2,
+            "full_name": "Jane Smith",
+            "post": "p1",
+            "house": "H2",
+            "gender": "Female",
+            "logo": "",
+            "slogan": "Goodbye World!",
+            "votes": 2,
+        },
+        {
+            "id": 3,
+            "full_name": "Bob Johnson",
+            "post": "p1",
+            "house": "H3",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again!",
+            "votes": 1,
+        },
+    ],
+    "p2": [
+        {
+            "id": 4,
+            "full_name": "Noah Johnson",
+            "post": "p2",
+            "house": "H1",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again and !",
+            "votes": 2,
+        },
+        {
+            "id": 5,
+            "full_name": "Tech Tim",
+            "post": "p2",
+            "house": "H3",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 9,
+        },
+    ],
+    "p3": [
+        {
+            "id": 6,
+            "full_name": "Tristar Mosh",
+            "post": "p3",
+            "house": "H3",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 2,
+        },
+        {
+            "id": 7,
+            "full_name": "Tech Mosh",
+            "post": "p3",
+            "house": "H2",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 5,
+        },
+        {
+            "id": 8,
+            "full_name": "Moxie Tim",
+            "post": "p3",
+            "house": "H3",
+            "gender": "FeMale",
+            "logo": "",
+            "slogan": "Hello Tick!",
+            "votes": 1,
+        },
+        {
+            "id": 9,
+            "full_name": "John Felt",
+            "post": "p3",
+            "house": "H1",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 5,
+        },
+    ],
+    "p4": [
+        {
+            "id": 6,
+            "full_name": "Tristar Mosh",
+            "post": "p3",
+            "house": "H3",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 0,
+        },
+        {
+            "id": 7,
+            "full_name": "Tech Mosh",
+            "post": "p3",
+            "house": "H2",
+            "gender": "Male",
+            "logo": "",
+            "slogan": "Hello Again noomm!",
+            "votes": 0,
+        },
+    ],
+}

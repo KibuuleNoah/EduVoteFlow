@@ -132,11 +132,26 @@
   </div>
 </div>
 <div class="d-flex justify-content-end mt-5">
-  <button type="submit" class="btn btn-danger">                
+  <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#delete-poll-modal">
     <i class="bx bx-trash"></i>
     Delete Poll
-  </button>
+  </a>
   <div>
+  <!-- Modal -->
+<div class="modal fade" id="delete-poll-modal" tabindex="-1" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h1 class="modal-title text-danger fs-5" id=""><center>Sure you want to proceed with the Deletion ?<br>This poll will pemanently be deleted!</center></h1>  
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-info" data-bs-dismiss="modal">Cancel</button>
+        <a href="{{url_for('polls.delete_poll',poll_id=poll.id)}}" class="btn btn-danger">proceed</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock viewer %}
 
 {% block scripts %}

@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Election Results</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .winner {
+        background-color: #d4edda;
+      }
+      .loser {
+        background-color: #f8d7da;
+      }
+      .tie {
+        background-color: #fff3cd;
+      }
+      .result-icon {
+        font-size: 2rem;
+      }
+      .res-table-cont {
+        max-height: 10rem;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main Content -->
+    <div class="container mt-5">
+      <div class="text-center mb-5">
+        <h1 class="display-4">School Election Results 2024</h1>
+        <p class="lead">Congratulations to all participants!</p>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 m-0">
+          <!-- Results Table -->
+          <h1 class="text-center">
+            <span><i class="bx bxs-trophy result-icon"></i> Winner</span>
+          </h1>
+          <div class="res-table-cont">
+            <table class="table table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Position</th>
+                  <th scope="col">Candidate</th>
+                  <th scope="col">Votes</th>
+                  <th scope="col">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="winner">
+                  <th scope="row">President</th>
+                  <td>John Doe</td>
+                  <td>1200</td>
+                  <td><i class="bx bxs-trophy result-icon"></i> Winner</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-md-6 m-0">
+          <!-- Results Table -->
+          <h1 class="text-center">
+            <span><i class="bx bxs-sad result-icon"></i> Loser</span>
+          </h1>
+
+          <div class="res-table-cont">
+            <table class="table table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Position</th>
+                  <th scope="col">Candidate</th>
+                  <th scope="col">Votes</th>
+                  <th scope="col">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="loser">
+                  <th scope="row">President</th>
+                  <td>Jane Smith</td>
+                  <td>950</td>
+                  <td><i class="bx bxs-sad result-icon"></i> Loser</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-md-6 m-0">
+          <!-- Results Table -->
+          <div>
+            <h1 class="text-center">
+              <span><i class="bx bxs-meh result-icon"></i> Tie</span>
+            </h1>
+
+            <div class="res-table-cont">
+              <table class="table table-hover">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">Position</th>
+                    <th scope="col">Candidate</th>
+                    <th scope="col">Votes</th>
+                    <th scope="col">Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="tie">
+                    <th scope="row">Vice President</th>
+                    <td>Michael Brown</td>
+                    <td>1000</td>
+                    <td><i class="bx bxs-meh result-icon"></i> Tie</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <center>
+            <button type="button" class="btn btn-outline-info">Download</button>
+          </center>
+        </div>
+        <div class="col-6">
+          <center>
+            <button type="button" class="btn btn-outline-info">Download</button>
+          </center>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header text-center bg-primary text-white">
+          <h3>Position: President</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Winner Card -->
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+              <div class="card h-100 border-success">
+                <div class="card-body text-center position-relative">
+                  <div class="position-relative d-inline-block">
+                    <img
+                      src="https://via.placeholder.com/100"
+                      class="img-fluid rounded-circle border border-success"
+                      alt="Avatar"
+                      style="border-width: 4px"
+                    />
+                    <span
+                      class="position-absolute top-0 start-100 translate-middle p-2 bg-success rounded"
+                    >
+                      <i class="bx bx-crown text-white"></i>
+                    </span>
+                  </div>
+                  <h5 class="card-title mt-3">John Doe</h5>
+                  <p class="card-text">
+                    <i class="bx bx-male"></i> Male<br />
+                    <i class="bx bxs-home"></i> House: Gryffindor
+                  </p>
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 60%"
+                      aria-valuenow="60"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      60%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Candidate 1 -->
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <img
+                    src="https://via.placeholder.com/100"
+                    class="img-fluid rounded-circle mb-3"
+                    alt="Avatar"
+                  />
+                  <h5 class="card-title">John Doe</h5>
+                  <p class="card-text">
+                    <i class="bx bx-male"></i> Male<br />
+                    <i class="bx bxs-home"></i> House: Gryffindor
+                  </p>
+                  <div class="progress">
+                    <div
+                      class="progress-bar"
+                      role="progressbar"
+                      style="width: 60%"
+                      aria-valuenow="60"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      60%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Candidate 2 -->
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <img
+                    src="https://via.placeholder.com/100"
+                    class="img-fluid rounded-circle mb-3"
+                    alt="Avatar"
+                  />
+                  <h5 class="card-title">Jane Smith</h5>
+                  <p class="card-text">
+                    <i class="bx bx-female"></i> Female<br />
+                    <i class="bx bxs-home"></i> House: Slytherin
+                  </p>
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 40%"
+                      aria-valuenow="40"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      40%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Candidate 3 -->
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <img
+                    src="https://via.placeholder.com/100"
+                    class="img-fluid rounded-circle mb-3"
+                    alt="Avatar"
+                  />
+                  <h5 class="card-title">Alex Brown</h5>
+                  <p class="card-text">
+                    <i class="bx bx-male"></i> Male<br />
+                    <i class="bx bxs-home"></i> House: Hufflepuff
+                  </p>
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-warning"
+                      role="progressbar"
+                      style="width: 50%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      50%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Candidate 4 -->
+            <div class="col-12 col-md-4 col-lg-3 mb-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <img
+                    src="https://via.placeholder.com/100"
+                    class="img-fluid rounded-circle mb-3"
+                    alt="Avatar"
+                  />
+                  <h5 class="card-title">Emma White</h5>
+                  <p class="card-text">
+                    <i class="bx bx-female"></i> Female<br />
+                    <i class="bx bxs-home"></i> House: Ravenclaw
+                  </p>
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-info"
+                      role="progressbar"
+                      style="width: 30%"
+                      aria-valuenow="30"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      30%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-lg-start">
+      <div class="container p-4">
+        <p class="text-center">
+          &copy; 2024 School Elections. All rights reserved.
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

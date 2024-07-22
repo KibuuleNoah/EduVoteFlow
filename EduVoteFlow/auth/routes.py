@@ -10,6 +10,7 @@ from flask import (
     flash,
 )
 from werkzeug.utils import secure_filename
+from EduVoteFlow.auth.utils import abbr_str, get_img_extension
 from EduVoteFlow.election.forms import StudentLogin
 
 # from EduVoteFlow.models import SchoolUser, Poll
@@ -73,7 +74,7 @@ def school_register():
     if form.validate_on_submit():
         # Get Form Data
         school_name = request.form["school_name"]
-        school_abbr = request.form["school_abbr"]
+        school_abbr = abbr_str(school_name)
         admin_username = request.form["admin_username"]
         password = request.form["password"]
         email = request.form["email"]
@@ -82,11 +83,10 @@ def school_register():
         # Save Logo
         import os.path
 
-        logo_path = (url_for("static", filename=f"DataStore/SchoolLogo/default.jpg"),)
+        logo_path = url_for("static", filename=f"DataStore/SchoolLogo/default.jpg")
 
-        logo_ext = os.path.splitext(secure_filename(school_logo.filename))[
-            1
-        ]  # Get Extension
+        logo_ext = get_img_extension(school_logo.filename)  # Get Extension
+
         if logo_ext:
             logofilename = f"{school_abbr}{logo_ext}"
             school_logo.save(
@@ -94,8 +94,9 @@ def school_register():
                     current_app.config["UPLOAD_FOLDER"], "SchoolLogo", logofilename
                 )
             )
-            logo_path = (
-                url_for("static", filename=f"DataStore/SchoolLogo/{logofilename}"),
+            logo_path = url_for(
+                "static",
+                filename=f"DataStore/SchoolLogo/{logofilename}",
             )
 
             # os.remove(os.path.join(
@@ -124,7 +125,7 @@ def school_register():
         import os
 
         path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
-        os.mkdir(f"{path}/{school_abbr}")
+        os.mkdir(f"{path}/{school_abbr}{new_school.id}")
 
         flash("Successfully Created Account! Please Login to EduVoteFlow", "success")
         return redirect(url_for("auth.school_login"))
@@ -199,7 +200,7 @@ def user_logout():
         poll.total_voted += 1
         db.session.commit()
         logout_user()
-        return jsonify({})
+        return render_template("election/congrats.html", title="EduVoteFlow")
     logout_user()
     return redirect(url_for("auth.school_login"))
     # url_for("election.student_login", school_abbr=school_abbr, poll_id=poll_id)

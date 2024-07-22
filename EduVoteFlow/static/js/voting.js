@@ -34,7 +34,7 @@ function NextBallot() {
         <div class="col-6 col-md-4 col-3 mb-2">
           <div class="card bg-dark rounded">
             <div class="card-header">
-              <img class="img-fluid rounded-circle" src="/static/DataStore/default.jpg" style="width:8rem;height:8rem;">
+              <img class="img-fluid rounded-circle" src="${candidate.logo}" style="width:8rem;height:8rem;">
             </div>
             <div class="card-body">
               <h6 class="card-title d-md-none">${candidate.full_name} <br> <small>${candidate.slogan}</small> </h6>

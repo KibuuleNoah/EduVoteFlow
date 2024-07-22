@@ -8,7 +8,6 @@ from wtforms_components import ColorField
 
 class SchoolLogin(FlaskForm):
     admin_username = StringField("Admin Username", validators=[DataRequired()])
-    school_abbr = StringField("School Abbr", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Login")
@@ -16,7 +15,6 @@ class SchoolLogin(FlaskForm):
 
 class SchoolRegister(FlaskForm):
     school_name = StringField("School Name", validators=[DataRequired()])
-    school_abbr = StringField("School Abbreviation", validators=[DataRequired()])
     admin_username = StringField("Admin Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired()])

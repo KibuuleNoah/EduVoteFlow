@@ -1,0 +1,20 @@
+{% extends "base.html" %} {% block title %}Congratulations!{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center d-flex">
+  <div class="jumbotron bg-vis-dark">
+    <h1 class="display-4 text-info">Congratulations</h1>
+    <h2 class="display-5 text-success">{{current_user.full_name}}</h2>
+    <div class="text-palet" >
+      <p class="lead">
+      We are thrilled to announce that you have successfully completed your
+      election process.
+      </p>
+      <hr class="my-4" />
+      <p class="">
+      Your dedication and hard work have truly paid off. We are proud of your
+      achievement. please wait for the result declartion, hope you candidates Winners
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
