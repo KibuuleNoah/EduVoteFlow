@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, FileField, BooleanField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
-from wtforms_components import ColorField
 
 # Forms related to User Functionality i.e Logins, Register etc
 

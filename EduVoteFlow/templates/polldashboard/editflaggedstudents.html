@@ -2,9 +2,14 @@
 
 {% block viewer %}
 	 <form method="POST" method="/" class='elecstart' enctype="multipart/form-data">
-		<h1 class='display-1'>Edit Flagged Students</h1><br>
+		<h1 class='display-1 text-center text-info'>Edit Flagged Students</h1><br>
 		<table class="table table-dark">
 			<thead>
+        <tr>
+          <td colspan="4" class="text-center text-warning">
+          Please change all the names in the following inputs
+          </td>
+        </tr>
 				<tr>
 				<th scope="col">Student Name</th>
 				<th scope="col">Class</th>
@@ -18,12 +23,12 @@
 					<th scope="row">{{flagged[i].full_name}}</th>
 					<td>{{flagged[i].grade}}</td>
 					<td>{{flagged[i].section}}</td>
-					<td><input type="text" name="d{{i}}" class="form-control" placeholder="Enter Username"></td>
+          <td><input type="text" name="d{{i}}" class="form-control" placeholder="{{flagged[i].username}}"></td>
 				</tr>
 				{% endfor %}
 			</tbody>
 		</table>
-		{{form.submit(class="btn btn-success", style="width: 100%;")}}
+		{{form.submit(class="btn btn-outline-info", style="width: 100%;")}}
 	</form>
 {% endblock viewer %}
 

@@ -25,7 +25,20 @@
     {% if status == "Active" %}
       <div class="elecstart">
 			<center>
-				<h6 class="text-info">link: <a href="{{link}}">{{link}}</a></h6>
+      <div class="card bg-dark text-white" style="max-width: 20rem">
+        <div class="card-header p-1">
+          <div class="col p-0 m-0">
+            <span class="text-info">Election link</span> 
+          </div>
+          <div class="col d-flex justify-content-end px-3 m-0">
+            <i class='bx bx-copy' onclick="copyToClipboard(event,'{{link}}')"> copy</i>
+          </div>
+        </div>
+        <div class="card-body text-nowrap overflow-auto p-2">
+          {{link}}
+        </div>
+      </div>
+
 				<br><br>
 				<a href="{{link}}" class="btn btn-outline-info">Go to Student Login</a>
 			</center>
@@ -155,5 +168,27 @@
 {% endblock viewer %}
 
 {% block scripts %}
+  <script>
+    function copyToClipboard(event,text) {
+      const tempTextInput = document.createElement('input');
+      tempTextInput.value = text.trim();
+      document.body.appendChild(tempTextInput);
+      tempTextInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextInput);
+      
+      // Change icon to tick
+      const icon = event.target;
+      icon.className = 'bx bx-check text-success';
+      icon.innerText = " copied"
+      
+      // Set timeout to revert icon back to copy after 5 seconds
+      setTimeout(() => {
+        icon.className = 'bx bx-copy';
+        icon.innerText = " copy"
+      }, 3000);
+      // Optional: You can display a confirmation message
+    }
+  </script>
 {% endblock scripts %}
 

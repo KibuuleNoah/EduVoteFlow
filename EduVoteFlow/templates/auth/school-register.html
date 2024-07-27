@@ -7,8 +7,8 @@
   <form class="p-2" method="POST" action="" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
-      <center><h1 class="display-4">Welcome To Vote Flow</h1></center><br>
-      <center><h1 id="title">Create Account</h1></center><br>
+      <center><h1 class="display-4 text-info">Welcome To Vote Flow</h1></center><br>
+      <center><h1 class="text-palet" id="title">Create Account</h1></center><br>
       <div class="form-group">
         {{ form.school_name.label(class="form-control-label") }}
         {% if form.school_name.errors %}
@@ -79,7 +79,7 @@
         {% endif %}
       </div><br>
       </fieldset><br>
-    <div class="form-group">{{ form.submit(class="btn btn-success submit") }}</div>
+    <div class="form-group">{{ form.submit(class="btn btn-outline-info") }}</div>
     <div>
       <center>
         <small class="text-muted">

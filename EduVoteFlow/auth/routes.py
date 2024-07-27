@@ -1,6 +1,5 @@
 # imports
 from flask import (
-    jsonify,
     render_template,
     request,
     Blueprint,
@@ -9,16 +8,15 @@ from flask import (
     current_app,
     flash,
 )
-from werkzeug.utils import secure_filename
-from EduVoteFlow.auth.utils import abbr_str, get_img_extension
+from EduVoteFlow.auth.utils import abbr_str, get_file_extension
 from EduVoteFlow.election.forms import StudentLogin
 
-# from EduVoteFlow.models import SchoolUser, Poll
 from EduVoteFlow import db  # , bcrypt
-from EduVoteFlow.models import School, Poll, Student, Candidate, User
+from EduVoteFlow.models import School, Poll, Student, User
 from EduVoteFlow.auth.forms import SchoolLogin, SchoolRegister
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import or_
 
 # from .utils import img2svg
 
@@ -44,8 +42,9 @@ def auth_home():
 def school_login():
     form = SchoolLogin()
     if form.validate_on_submit():
-        # school_abbr = request.form["school_abbr"]
-        school = School.query.filter_by(admin_username=form.admin_username.data).first()
+        school = School.query.filter_by(
+            admin_username=form.admin_username.data.lower()
+        ).first()
 
         if not school:
             flash(
@@ -61,7 +60,7 @@ def school_login():
         else:
             user = User.query.filter_by(user_type="school", user_id=school.id).first()
             login_user(user, remember=form.remember.data)
-            return redirect(url_for("polls.home"))
+            return redirect(url_for("polls.polls_home"))
 
     return render_template(
         "auth/school-login.html", title="Login - EduVoteFlow", form=form
@@ -73,62 +72,79 @@ def school_register():
     form = SchoolRegister()
     if form.validate_on_submit():
         # Get Form Data
-        school_name = request.form["school_name"]
+        school_name = request.form["school_name"].title()
         school_abbr = abbr_str(school_name)
-        admin_username = request.form["admin_username"]
+        admin_username = request.form["admin_username"].lower()
         password = request.form["password"]
         email = request.form["email"]
         school_logo = request.files["school_logo"]
 
-        # Save Logo
-        import os.path
-
-        logo_path = url_for("static", filename=f"DataStore/SchoolLogo/default.jpg")
-
-        logo_ext = get_img_extension(school_logo.filename)  # Get Extension
-
-        if logo_ext:
-            logofilename = f"{school_abbr}{logo_ext}"
-            school_logo.save(
-                os.path.join(
-                    current_app.config["UPLOAD_FOLDER"], "SchoolLogo", logofilename
-                )
+        # check is if any of school_name,admin_username or email exists
+        any_schools = School.query.filter(
+            or_(
+                School.name == school_name,
+                School.admin_username == admin_username,
+                School.email == email,
             )
-            logo_path = url_for(
-                "static",
-                filename=f"DataStore/SchoolLogo/{logofilename}",
-            )
-
-            # os.remove(os.path.join(
-            # 	current_app.config['UPLOAD_FOLDER'], 'SchoolLogo', logofilename))
-
-        # Hash Password
-        # hashed_password = bcrypt.generate_password_hash(
-        # password).decode('utf-8')
-        hashed_password = generate_password_hash(password)
-        # Add   to Database
-        new_school = School(
-            admin_username=admin_username,
-            name=school_name,
-            abbr=school_abbr,
-            email=email,
-            password=hashed_password,
-            school_logo=logo_path,
         )
-        db.session.add(new_school)
-        db.session.commit()
+        # if no school having that same info
+        if not any_schools.all():
+            # Save Logo
+            import os.path
 
-        new_user = User(user_type="school", user_id=new_school.id)
-        db.session.add(new_user)
-        db.session.commit()
-        # Generate Logo Directory
-        import os
+            logo_path = url_for("static", filename=f"DataStore/SchoolLogo/default.svg")
 
-        path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
-        os.mkdir(f"{path}/{school_abbr}{new_school.id}")
+            logo_ext = get_file_extension(school_logo.filename)  # Get Extension
 
-        flash("Successfully Created Account! Please Login to EduVoteFlow", "success")
-        return redirect(url_for("auth.school_login"))
+            if logo_ext:
+                logofilename = f"{school_abbr}{logo_ext}"
+                school_logo.save(
+                    os.path.join(
+                        current_app.config["UPLOAD_FOLDER"], "SchoolLogo", logofilename
+                    )
+                )
+                logo_path = url_for(
+                    "static",
+                    filename=f"DataStore/SchoolLogo/{logofilename}",
+                )
+
+                # os.remove(os.path.join(
+                # 	current_app.config['UPLOAD_FOLDER'], 'SchoolLogo', logofilename))
+
+            # Hash Password
+            # hashed_password = bcrypt.generate_password_hash(
+            # password).decode('utf-8')
+            hashed_password = generate_password_hash(password)
+            # Add   to Database
+            new_school = School(
+                admin_username=admin_username,
+                name=school_name,
+                abbr=school_abbr,
+                email=email,
+                password=hashed_password,
+                logo=logo_path,
+            )
+            db.session.add(new_school)
+            db.session.commit()
+
+            new_user = User(user_type="school", user_id=new_school.id)
+            db.session.add(new_user)
+            db.session.commit()
+            # Generate Logo Directory
+            import os
+
+            path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
+            os.mkdir(f"{path}/{school_abbr}{new_school.id}")
+
+            flash(
+                "Successfully Created Account! Please Login to EduVoteFlow", "success"
+            )
+            return redirect(url_for("auth.school_login"))
+        else:
+            flash(
+                "Either 'School Name' , 'Admin Username'  or  'Email'  already taken, Use other unique Info",
+                "danger",
+            )
     return render_template(
         "auth/school-register.html", title="Register - EduVoteFlow", form=form
     )
@@ -140,7 +156,7 @@ def student_login(school_id, poll_id):
     poll = Poll.query.filter_by(id=poll_id).first()
     form = StudentLogin()
     if form.validate_on_submit():
-        username = request.form["username"].title()
+        username = request.form["username"]
         password = request.form["password"].upper()
         student = Student.query.filter_by(
             school_id=school.id,
@@ -169,9 +185,7 @@ def student_login(school_id, poll_id):
             )
 
         user = User.query.filter_by(user_type="student", user_id=student.id).first()
-        print("STUDENT:", user)
         login_user(user, remember=True)
-        print("CURRENT: ", current_user)
         return redirect(
             url_for(
                 "election.voting_page",
@@ -203,5 +217,3 @@ def user_logout():
         return render_template("election/congrats.html", title="EduVoteFlow")
     logout_user()
     return redirect(url_for("auth.school_login"))
-    # url_for("election.student_login", school_abbr=school_abbr, poll_id=poll_id)
-    # )

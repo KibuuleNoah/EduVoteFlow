@@ -7,8 +7,8 @@
     <form method="POST" action="" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
       <fieldset class="form-group">
-        <h1 class="display-4 text-center">Welcome Back To EduVoteFlow</h1>
-        <h1 class="text-center">Login</h1>
+        <h1 class="display-4 text-center text-info">Welcome Back To EduVoteFlow</h1>
+        <h1 class="text-center text-palet">Login</h1>
         <center><img class="m-2" src="{{url_for('static', filename='DataStore/SchoolLogo/default.svg')}}" alt="" id="logo"></center>
         <br><br>
         <div class="form-group">
@@ -44,7 +44,7 @@
           {{ form.remember.label(class="form-check-label") }}
         </div>
       </fieldset>
-      <div class="form-group">{{ form.submit(class="btn btn-info submit") }}</div>
+      <div class="form-group">{{ form.submit(class="btn btn-outline-info") }}</div>
       <center>
         <small class="text-muted">
           Need An Account? <a class="ml-2" href="{{ url_for('auth.school_register') }}">Sign Up Now</a>

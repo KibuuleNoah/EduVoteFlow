@@ -52,8 +52,12 @@ body{
 {% if poll.status == "Scheduled" %}
 <div class="row">
   <div class="col-8">
-    <details class="mb-3">
-      <summary class="btn btn-info">Add Candidate</summary><br>
+  <a class="btn btn-outline-info mb-1" data-bs-toggle="collapse" href="#add-candidate-collapse" role="button" aria-expanded="false" aria-controls="collapse">
+    Add Candidate
+  </a>
+ 
+  <div class="collapse mb-3" id="add-candidate-collapse">
+    <div class="card card-body bg-dark">
       <div class="d-flex">
         <form method="POST" action="{{url_for('polls.add_candidate',poll_id=poll.id)}}" enctype="multipart/form-data">
           {{ form.hidden_tag() }}
@@ -80,9 +84,9 @@ body{
               {% endfor %}
             </div>
             <div class="form-group col-md-5">
-              {{ form.party.label }}<br>
-              {{ form.party(class='form-control') }}<br>
-              {% for error in form.party.errors %}
+              {{ form.grade.label }}<br>
+              {{ form.grade(class='form-control') }}<br>
+              {% for error in form.grade.errors %}
               <span class="text-danger">{{ error }}</span>
               {% endfor %}
             </div>
@@ -113,7 +117,8 @@ body{
           </div>
         </form>
       </div>
-    </details>
+    </div>
+  </div>
   </div>
   <div class="col">
     <div class="align-end">
@@ -131,7 +136,7 @@ body{
     <tr>
       <th scope="col">Sl.No</th>
       <th scope="col">Candidate Name</th>
-      <th scope="col">Party</th>
+      <th scope="col">grade</th>
       <th scope="col">Post</th>
       <th scope="col">Slogan</th>
       <th scope="col">House</th>
@@ -149,7 +154,7 @@ body{
         <td scope="row">{{loop.index}}</td>
         <td scope="row">{{candidate.full_name}}</td>
         <td class="align-middle">
-          {{candidate.party}}
+          {{candidate.grade}}
         </td>
         <td class="align-middle">
           {{candidate.post}}
@@ -173,7 +178,7 @@ body{
 </form>
 {% else %}
 <center style="margin-top: 7rem;">
-  <div class="display-1 border border-info rounded">
+  <div class="display-1 border border-info rounded text-warning">
     No Candidates<br> Yet !!!
   </div>
 </center>

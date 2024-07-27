@@ -35,7 +35,6 @@ def create_app(config_class=Config):
     from .models import (
         School,
         Student,
-        CandidateResult,
         Candidate,
         FlaggedStudent,
         Poll,

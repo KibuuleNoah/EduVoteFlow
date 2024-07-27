@@ -6,7 +6,7 @@
     <div class="rounded" style="background:white">
       <div class="modal-content bg-dark" style="">
         <div class="modal-header">
-          <h1 class="modal-title text-center fs-5" id="title"><strong class="linear">Create Poll</strong></h1>
+          <h1 class="modal-title text-center fs-5 text-palet" id="title"><strong class="linear">Create Poll</strong></h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -72,7 +72,7 @@
                     {% endif %}
                   </div>
                 </fieldset>
-                {{ form.submit(class="btn btn-success submit", id="newpoll") }}
+                {{ form.submit(class="btn btn-outline-info submit", id="newpoll") }}
               </form>
             </div>
           </div>
@@ -82,7 +82,15 @@
   </div>
 </div>
 <section class="container">
-  {% if activepolls or scheduledpolls or archivedpolls %}
+  <a href="#" class="nav__link">
+    <i class="bx bx-user nav__icon"></i>
+    <span class="nav__name">Profile</span>
+    <i
+        class="bx bx-chevron-down nav__icon nav__dropdown-icon"
+        ></i>
+  </a>
+
+{% if activepolls or scheduledpolls or archivedpolls %}
   {% if activepolls %}
   <h2 class="mt-5 text-info">Active Polls <sup class="text-secondary">({{ activepolls|length }})</sup></h2>
   <div class="pollbody">
@@ -160,7 +168,7 @@
   {% endif %}
 
   {% else %}
-  <div class='no-polls'>
+  <div class='no-polls' style="margin-top: 50%;">
     <center>
       <h2 class="text-warning">No Polls Available</h2>
     </center>
@@ -176,9 +184,6 @@
    .poll-body{
       margin: 10px;
       margin-top: 20px; 
-   }
-   .no-polls{
-      margin-top: 24%;
    }
    #new-poll-btn {
       position: fixed;

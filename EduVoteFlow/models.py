@@ -22,49 +22,55 @@ def load_user(user_id):
 
 
 class School(UserMixin, db.Model):
+    __tablename__ = "schools"
     id = db.Column(db.Integer, primary_key=True)
     admin_username = db.Column(db.String, unique=True, nullable=False)
     name = db.Column(db.String, unique=True, nullable=False)
     abbr = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, unique=True, nullable=False)
-    school_logo = db.Column(db.String, nullable=False)
-    polls = db.relationship("Poll")
+    logo = db.Column(db.String, nullable=False)
+    polls = db.relationship("Poll", backref="schools", cascade="all")
 
     def __repr__(self):
         return f"School('{self.name}', '{self.abbr}', '{self.admin_username}')"
 
 
 class Student(UserMixin, db.Model):
+    __tablename__ = "students"
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
-    grade = db.Column(db.Integer, nullable=False)
+    grade = db.Column(db.String, nullable=False)
     section = db.Column(db.String, nullable=False)
     roll_no = db.Column(db.String, nullable=False)
-    gender = db.Column(db.String, nullable=True)
+    gender = db.Column(db.String, nullable=False)
     house = db.Column(db.String, nullable=True)
-    voted = db.Column(db.Boolean)
-    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
-    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
+    voted = db.Column(db.Boolean, default=False)
+    flag = db.relationship(
+        "FlaggedStudent", backref="students", cascade="all", lazy=True
+    )
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id", ondelete="CASCADE"))
 
     def __repr__(self):
         return f"Student('{self.school_id}', '{self.full_name}')"
 
 
 class Candidate(db.Model):
+    __tablename__ = "candidates"
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String, nullable=False)
     post = db.Column(db.String, nullable=False)
     house = db.Column(db.String, nullable=True)
-    party = db.Column(db.String, nullable=True)
+    grade = db.Column(db.String, nullable=False)
     gender = db.Column(db.String, nullable=True)
     logo = db.Column(db.String, default="/static/DataStore/default.jpg")
     slogan = db.Column(db.String, nullable=False)
     votes = db.Column(db.Integer, default=0)
-    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
-    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id", ondelete="CASCADE"))
 
     @property
     def to_dict(self):
@@ -81,6 +87,7 @@ class Candidate(db.Model):
 
 
 class Poll(db.Model):
+    __tablename__ = "polls"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     # election_date = db.Column(db.String, nullable=False)
@@ -90,32 +97,24 @@ class Poll(db.Model):
     status = db.Column(db.String, nullable=False)
     total_votes = db.Column(db.Integer, default=0)
     total_voted = db.Column(db.Integer, default=0)
-    students = db.relationship("Student")
-    candidates = db.relationship("Candidate")
-    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
+    students = db.relationship("Student", backref="polls", cascade="all")
+    candidates = db.relationship("Candidate", backref="polls", cascade="all")
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"))
 
     def __repr__(self):
         return f"Poll('{self.name}', '{self.year}')"
 
 
 class FlaggedStudent(db.Model):
+    __tablename__ = "flaggedstudents"
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("student.id"))
-    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
-    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
-
-
-class CandidateResult(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    candidate_id = db.Column(db.Integer, db.ForeignKey("candidate.id"))
-    votes = db.Column(db.Integer)
-    school_id = db.Column(db.Integer, db.ForeignKey("school.id"))
-    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"))
+    student_id = db.Column(db.Integer, db.ForeignKey("students.id"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id", ondelete="CASCADE"))
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"))
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     user_type = db.Column(db.String, nullable=False)
-    user_id = db.Column(
-        db.Integer, nullable=False
-    )  # This references either Student or School ID
+    user_id = db.Column(db.Integer, nullable=False)

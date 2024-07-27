@@ -30,6 +30,10 @@
       .bg-vis-dark {
         background: rgba(0, 0, 0, 0.5);
       }
+      .disabled {
+        pointer-events: none;
+        color: grey;
+      }
     </style>
 
     <title>{% block title%}{% endblock %}</title>
@@ -39,7 +43,7 @@
     <header class="header">
       <div class="text-center text-info">{{school.name}}</div>
       <div class="header__container">
-        <img src="{{school.school_logo}}" alt="" class="header__img" />
+        <img src="{{school.logo}}" alt="" class="header__img" />
         <!-- <div class="" style="width: 20rem"> -->
         <div class="navbar-brand" style="width: 30rem" href="#">
           <div class="row">
@@ -94,9 +98,9 @@
 
           <div class="nav__list">
             {% if poll.status != "Archived" %}
-            <div class="nav__items">
-              <h3 class="nav__subtitle">Profile</h3>
 
+            <div class="nav__items">
+              <h3 class="nav__subtitle">Menu</h3>
               <a
                 href="{{ url_for('polls.dashboard_home',poll_id=poll.id)}}"
                 class="nav__link {%if dash_location=='Home'%}active{%endif%}"
@@ -105,34 +109,40 @@
                 <span class="nav__name">Home</span>
               </a>
 
-              <div class="nav__dropdown">
-                <a href="#" class="nav__link">
-                  <i class="bx bx-user nav__icon"></i>
-                  <span class="nav__name">Profile</span>
-                  <i
-                    class="bx bx-chevron-down nav__icon nav__dropdown-icon"
-                  ></i>
-                </a>
-
-                <div class="nav__dropdown-collapse">
-                  <div class="nav__dropdown-content">
-                    <a href="#" class="nav__dropdown-item">Passwords</a>
-                    <a href="#" class="nav__dropdown-item">Mail</a>
-                    <a href="#" class="nav__dropdown-item">Accounts</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="nav__items">
-              <h3 class="nav__subtitle">Menu</h3>
               <a
-                href="{{ url_for('polls.home', school_abbr=school.school_abbr)}}"
+                href="{{ url_for('polls.polls_home', school_abbr=school.school_abbr)}}"
                 class="nav__link"
               >
                 <i class="bx bx-list-ul nav__icon"></i>
                 <span class="nav__name"> All Polls</span>
               </a>
+
+              <a
+                class="nav__link {%if dash_location=='Add-Students'%}active{%endif%} {% if poll.status != 'Scheduled' %}disabled{% endif %}"
+                href="{{ url_for('polls.add_students',  poll_id=poll.id) }}"
+              >
+                <i class="bx bx-user-plus nav__icon"></i>
+                <span class="nav__name">Add Students</span>
+              </a>
+              <a
+                class="nav__link {%if dash_location=='Add-Candidates'%}active{%endif%} {% if poll.status != 'Scheduled' %}disabled{% endif %}"
+                href="{{ url_for('polls.add_candidates',  poll_id=poll.id) }}"
+              >
+                <i class="bx bx-group nav__icon"></i>
+                <span class="nav__name"> Add Candidates</span>
+              </a>
+              <a
+                class="nav__link {%if dash_location=='Results'%}active{%endif%} {% if poll.status != 'Active' %}disabled{% endif %}"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#view-results-modal"
+              >
+                <i class="bx bx-pie-chart-alt nav__icon"></i
+                ><span class="nav__name"> Election Results</span>
+              </a>
+            </div>
+            <div class="nav__items">
+              <h3 class="nav__subtitle">Manage</h3>
 
               <a
                 class="nav__link {%if dash_location=='Manage-Students'%}active{%endif%}"
@@ -148,29 +158,6 @@
               >
                 <i class="bx bx-cog nav__icon"></i>
                 <span class="nav__name">Manage Candidates</span>
-              </a>
-              <a
-                class="nav__link {%if dash_location=='Add-Students'%}active{%endif%}"
-                href="{{ url_for('polls.add_students',  poll_id=poll.id) }}"
-              >
-                <i class="bx bx-user-plus nav__icon"></i>
-                <span class="nav__name">Add Students</span>
-              </a>
-              <a
-                class="nav__link {%if dash_location=='Add-Candidates'%}active{%endif%}"
-                href="{{ url_for('polls.add_candidates',  poll_id=poll.id) }}"
-              >
-                <i class="bx bx-group nav__icon"></i>
-                <span class="nav__name"> Add Candidates</span>
-              </a>
-              <a
-                class="nav__link {%if dash_location=='Results'%}active{%endif%}"
-                href="#"
-                data-bs-toggle="modal"
-                data-bs-target="#view-results-modal"
-              >
-                <i class="bx bx-pie-chart-alt nav__icon"></i
-                ><span class="nav__name"> Election Results</span>
               </a>
             </div>
             {% endif %}
@@ -216,7 +203,7 @@
               <h3 class="modal-title text-warning fs-5" id="">
                 <center>
                   Sure you want to view the results, After this action the
-                  <b>Election</b> in be Ended
+                  <b>Election</b> will be Ended
                 </center>
               </h3>
             </div>
@@ -263,5 +250,9 @@
 
     <!--========== OTHER JS SCRIPTS ==========-->
     {% block scripts %} {% endblock scripts %}
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      eruda.init();
+    </script>
   </body>
 </html>
