@@ -63,14 +63,14 @@
             {% for unopposed_cand in unopposed_cands  %}
             <tr>
               <th scope="row" style="color: gold;">{{unopposed_cand["post"]}}</th>
-              <td style="color: gold;">{{unopposed_cand["full_name"]}}</td>
+              <td style="color: gold;">{{unopposed_cand["names"]}}</td>
               <td style="color: gold;">flat</td>
             </tr>
             {% endfor %}
             {% for winner in winners %}
             <tr class="text-success">
               <th scope="row">{{winner["post"]}}</th>
-              <td>{{winner["full_name"]}}</td>
+              <td>{{winner["names"]}}</td>
               <td>{{winner["votes"]}}</td>
             </tr>
             {% endfor %}
@@ -104,7 +104,7 @@
             {% for loser in losers %}
             <tr class="text-danger">
               <th scope="row">{{loser["post"]}}</th>
-              <td>{{loser["full_name"]}}</td>
+              <td>{{loser["name"]}}</td>
               <td>{{loser["votes"]}}</td>
             </tr>
             {% endfor %}
@@ -164,7 +164,7 @@
                     <i class="bx bx-lock text-white"></i>
                 </span>
               </div>
-              <h5 class="card-title mt-3">{{candidate["full_name"]}}</h5>
+              <h5 class="card-title mt-3">{{candidate["name"]}}</h5>
               <p class="card-text">
               <i class="bx bx-{{candidate["gender"]|lower}}"></i> {{candidate["gender"]}}<br />
               <i class="bx bxs-home"></i> {{candidate["house"]}}
@@ -202,7 +202,7 @@
                     <i class="bx bx-crown text-white"></i>
                 </span>
               </div>
-              <h5 class="card-title mt-3">{{candidate["full_name"]}}</h5>
+              <h5 class="card-title mt-3">{{candidate["name"]}}</h5>
               <p class="card-text">
               <i class="bx bx-{{candidate["gender"]|lower}}"></i> {{candidate["gender"]}}<br />
               <i class="bx bxs-home"></i> {{candidate["house"]}}
@@ -234,7 +234,7 @@
                   class="img-fluid rounded-circle mb-3"
                   alt="Avatar"
                   />
-              <h5 class="card-title">{{candidate["full_name"]}}</h5>
+              <h5 class="card-title">{{candidate["name"]}}</h5>
               <p class="card-text">
               <i class="bx bx-{{candidate["gender"]|lower}}"></i> {{candidate["gender"]}}<br />
               <i class="bx bxs-home"></i> {{candidate["house"]}}

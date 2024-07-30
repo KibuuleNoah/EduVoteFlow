@@ -92,7 +92,7 @@ def school_register():
             # Save Logo
             import os.path
 
-            logo_path = url_for("static", filename=f"DataStore/SchoolLogo/default.svg")
+            logo_path = url_for("static", filename=f"media/school_logos/default.png")
 
             logo_ext = get_file_extension(school_logo.filename)  # Get Extension
 
@@ -100,16 +100,18 @@ def school_register():
                 logofilename = f"{school_abbr}{logo_ext}"
                 school_logo.save(
                     os.path.join(
-                        current_app.config["UPLOAD_FOLDER"], "SchoolLogo", logofilename
+                        current_app.config["UPLOAD_FOLDER"],
+                        "school_logos",
+                        logofilename,
                     )
                 )
                 logo_path = url_for(
                     "static",
-                    filename=f"DataStore/SchoolLogo/{logofilename}",
+                    filename=f"media/school_logos/{logofilename}",
                 )
 
                 # os.remove(os.path.join(
-                # 	current_app.config['UPLOAD_FOLDER'], 'SchoolLogo', logofilename))
+                # 	current_app.config['UPLOAD_FOLDER'], 'school_logos', logofilename))
 
             # Hash Password
             # hashed_password = bcrypt.generate_password_hash(
@@ -133,7 +135,7 @@ def school_register():
             # Generate Logo Directory
             import os
 
-            path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
+            path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='media')}"
             os.mkdir(f"{path}/{school_abbr}{new_school.id}")
 
             flash(

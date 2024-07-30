@@ -20,7 +20,7 @@
 			<tbody>
 				{% for i in range(flagged | length) %}
 				<tr>
-					<th scope="row">{{flagged[i].full_name}}</th>
+					<th scope="row">{{flagged[i].name}}</th>
 					<td>{{flagged[i].grade}}</td>
 					<td>{{flagged[i].section}}</td>
           <td><input type="text" name="d{{i}}" class="form-control" placeholder="{{flagged[i].username}}"></td>

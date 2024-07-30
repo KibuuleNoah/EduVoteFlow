@@ -3,7 +3,7 @@
 <!-- Main Body Code -->
 {% block content %}
        <div class="container">
-        <img src="{{url_for('static', filename='DataStore/SchoolLogo/')}}{{school.school_abbr}}.svg" alt="" id="logo">
+        <img src="{{url_for('static', filename='media/school_logos/')}}{{school.school_abbr}}.svg" alt="" id="logo">
             <div class="d-flex justify-content-center">
             <form method="POST" action="" enctype="multipart/form-data">
                 {{ form.hidden_tag() }}

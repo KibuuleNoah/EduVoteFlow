@@ -53,7 +53,11 @@ class AddCandidatesForm(FlaskForm):
 
 
 class AddStudentForm(FlaskForm):
-    student_name = StringField(
+    def __init__(self, house_choices: list[tuple[str]], *args, **kwargs):
+        super(AddStudentForm, self).__init__(*args, **kwargs)
+        self.house.choices = house_choices
+
+    name = StringField(
         "Student Name", validators=[DataRequired(), Length(min=2, max=100)]
     )
     grade = StringField("Grade", validators=[DataRequired()])
@@ -66,7 +70,7 @@ class AddStudentForm(FlaskForm):
         choices=[("Male", "Male"), ("Female", "Female")],
         validators=[DataRequired()],
     )
-    house = StringField("House", validators=[Optional(), Length(max=50)])
+    house = SelectField("House", choices=[], validators=[Optional(), Length(max=50)])
     submit = SubmitField("Add")
 
 
@@ -82,7 +86,7 @@ class AddCandidateForm(FlaskForm):
         self.post.choices = post_choices
         self.house.choices = house_choices
 
-    candidate_name = StringField(
+    name = StringField(
         "Candidate Name", validators=[DataRequired(), Length(min=2, max=100)]
     )
     post = SelectField(

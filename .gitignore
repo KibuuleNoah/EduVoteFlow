@@ -1,6 +1,7 @@
 venv
 virt2
 instance
-VoteFlow/__pycache__
-.*__pycache__
-*.pyc
+__pycache__/
+# VoteFlow/__pycache__
+# .*__pycache__/
+# *.pyc

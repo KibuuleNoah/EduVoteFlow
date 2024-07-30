@@ -124,7 +124,7 @@ def get_candidate_data(school_id, poll_id, id):
     candidate = Candidate.query.filter_by(poll_id=poll_id, id=id).first()
     if candidate:
         url = (
-            url_for("static", filename=f"DataStore/{school_abbr}/{poll_id}/")
+            url_for("static", filename=f"media/{school_abbr}/{poll_id}/")
             + candidate.logo
         )
         print(url)

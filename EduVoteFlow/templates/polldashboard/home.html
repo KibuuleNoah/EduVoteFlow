@@ -105,9 +105,9 @@
         <tbody>
           {% for candidate in top_candidates  %}
           <tr>
-            <td>{{candidate.full_name}}</td>
+            <td>{{candidate.name}}</td>
             <td>{{candidate.post}}</td>
-            <td>....</td>
+            <td>{{candidate.grade}}</td>
             <td>{{candidate.gender}}</td>
             <td>{{candidate.votes}}</td>
           </tr>
@@ -133,9 +133,9 @@
           {% for candidate in unopposed  %}
           
           <tr>
-            <td>{{candidate.full_name}}</td>
+            <td>{{candidate.name}}</td>
             <td>{{candidate.post}}</td>
-            <td>....</td>
+            <td>{{candidate.grade}}</td>
             <td>{{candidate.gender}}</td>
           </tr>
           {% endfor %}

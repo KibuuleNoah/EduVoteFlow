@@ -37,8 +37,8 @@ function NextBallot() {
               <img class="img-fluid rounded-circle" src="${candidate.logo}" style="width:8rem;height:8rem;">
             </div>
             <div class="card-body">
-              <h6 class="card-title d-md-none">${candidate.full_name} <br> <small>${candidate.slogan}</small> </h6>
-              <h3 class="card-title d-none d-md-block">${candidate.full_name} <br> <small>${candidate.slogan}</small> </h3>
+              <h6 class="card-title d-md-none">${candidate.names} <br> <small>${candidate.slogan}</small> </h6>
+              <h3 class="card-title d-none d-md-block">${candidate.names} <br> <small>${candidate.slogan}</small> </h3>
               <div class="form-check">
                 <input class="form-check-input" type="radio" name="vote" id="" value="${candidate.id}">
                 <label class="form-check-label" for="">VOTE</label>

@@ -9,4 +9,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     APP_NAME = "EduVoteFlow"
     APP_PATH = os.getcwd()
-    UPLOAD_FOLDER = f"{APP_PATH}/{APP_NAME}/static/DataStore/"
+    UPLOAD_FOLDER = f"{APP_PATH}/{APP_NAME}/static/media/"

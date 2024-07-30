@@ -11,39 +11,90 @@
       <center>
       <h1 class="display-1">Add Candidates</h1>
       {{form.candidates(class='btn btn-outline-info m-1 x')}}
-      <div class="text-warning">
-        Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.
-      </div>  
+      <hr />
+      <div class="text-palet m-3">
+        Please upload an excel file with the following fields in the sample table below
+        <b> Field names must in be lower case, <i class="text-info"><q>house</q> is optonal</i></b>
+      </div>
+      <hr />
+ 
       <div class="d-flex justify-content-center overflow-auto">
-  <div style="max-width:40rem;">
-    <table class="table table-striped table-dark restable">
-      <thead>
-        <tr>
-          <th scope="col">full_name</th>
-          <th scope="col">post</th>
-          <th scope="col">slogan</th>
-          <th scope="col">gender</th>
-          <th scope="col">house</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for _ in range(3) %}
-        <tr>
-          <td>John Deo</td>
-          <td>HeadBoy</td>
-          <td>Now is the time</td>
-          <td>F</td>
-          <td>RED</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <hr>
-</div>
+        <div style="max-width:40rem;">
+          <table class="table table-striped table-dark restable">
+            <thead>
+              <tr>
+                <th scope="col">name</th>
+                <th scope="col">house</th>
+                <th scope="col">grade</th>
+                <th scope="col">gender</th>
+                <th scope="col">slogan</th>
+                <th scope="col">post</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Alice Jane</td>
+                <td>Red</td>
+                <td>A</td>
+                <td>Female</td>
+                <td>Brave and Bold</td>
+                <td>Captain</td>
+              </tr>
+              <tr>
+                <td>Mosh Bob</td>
+                <td>Blue</td>
+                <td>B</td>
+                <td>Male</td>
+                <td>Strong and True</td>
+                <td>Vice-Captain</td>
+              </tr>
+              <tr>
+                <td>Charlie Puth</td>
+                <td>Green</td>
+                <td>C</td>
+                <td>Male</td>
+                <td>Wise and Just</td>
+                <td>Member</td>
+              </tr>
+              <tr>
+                <td>Diana Omos</td>
+                <td>Yellow</td>
+                <td>A</td>
+                <td>Female</td>
+                <td>Bright and Cheery</td>
+                <td>Member</td>
+              </tr>
+              <tr>
+                <td>Eve Adam</td>
+                <td>Red</td>
+                <td>B</td>
+                <td>Female</td>
+                <td>Fearless and Free</td>
+                <td>Member</td>
+              </tr>
+              <tr>
+                <td colspan="5">
+                  <center>
+                    <a href="{{url_for('static',filename='/samples/candidates_sample.xlsx')}}" class="btn btn-outline-info"><i class="bx bx-download"></i> Sample Excel</a>
+                  </center>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <hr>
+      </div>
 
 
-      <h1 class="display-1">Add Logo Bundle</h1>
+      <h1 class="display-1 mt-5">Add Logo Bundle</h1>
+      <hr />
+      <div class="text-palet m-3">
+        Please upload a zip file containing candidates logos, with each logo named a vaild candidate name in Title_Case seperated by underscore <q>_</q>
+        <i>e.g Kibuule_Noah</i>
+        <b> Field names must in be lower case, <i class="text-info"><q>house</q> is optonal</i></b>
+      </div>
+      <hr />
+
       {{form.candidates_logo(class='btn btn-outline-info m-1 x')}}
       <br><br><br>
       {{form.submit(class='btn btn-outline-success x', style="width: 50%;")}}

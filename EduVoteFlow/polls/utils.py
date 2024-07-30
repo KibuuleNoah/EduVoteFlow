@@ -341,14 +341,14 @@ def create_candidate_record(candidate: dict, school_id: int, poll: Poll):
     new_candidate = Candidate(
         school_id=school_id,
         poll_id=poll.id,
-        full_name=candidate["student_name"].title(),  # Capitalize the full name
+        name=candidate["name"].title(),  # Capitalize the full name
         house=candidate.get(
             "house", ""
         ).title(),  # Capitalize the house name, default to empty string if not provided
-        grade=candidate["grade"],
-        gender=candidate["gender"],
+        grade=candidate["grade"].title(),
+        gender=candidate["gender"].title(),
         post=candidate["post"].title(),  # Capitalize the post name
-        slogan=candidate["slogan"],
+        slogan=candidate["slogan"].title(),
     )
 
     # Add the new Candidate object to the list
@@ -444,7 +444,7 @@ def save_candidates(
     :type poll: Poll
     :param posts: A list of valid post names for the poll.
     :type posts: list[str]
-    :param candidates: A list of dictionaries, each containing candidate details such as student_name, house, gender, post, and slogan.
+    :param candidates: A list of dictionaries, each containing candidate details such as student name, house, gender, post, and slogan.
     :type candidates: list[dict]
     :param db: The database session object used to interact with the database.
     :type db: SQLAlchemy session
@@ -452,7 +452,7 @@ def save_candidates(
     :rtype: bool
     """
     # Define the expected columns for candidate dictionaries
-    expected_cols = {"student_name", "house", "gender", "post", "slogan"}
+    expected_cols = {"name", "house", "gender", "post", "slogan"}
     # Get the actual columns from the first candidate dictionary
     actual_cols = set(candidates[0].keys())
 
@@ -463,7 +463,7 @@ def save_candidates(
     # Iterate over each candidate dictionary
     for candidate in candidates:
         # Only process candidates with valid posts
-        if candidate["post"] in posts:
+        if candidate["post"].title() in posts:
             # Save the candidate record to the database
             db.session.bulk_save_objects(
                 create_candidate_record(candidate, school.id, poll)
@@ -492,9 +492,9 @@ def get_schpolldir_path(school: School, poll: Poll, sch_path: bool = False) -> s
 
     # Generate the path based on whether the school path or full path is requested
     if sch_path:
-        path = f"{os.getcwd()}/EduVoteFlow/static/DataStore/{school_dir}"
+        path = f"{os.getcwd()}/EduVoteFlow/static/media/{school_dir}"
     else:
-        path = f"{os.getcwd()}/EduVoteFlow/static/DataStore/{school_dir}/{poll_dir}"
+        path = f"{os.getcwd()}/EduVoteFlow/static/media/{school_dir}/{poll_dir}"
 
     return path
 
@@ -701,7 +701,7 @@ def validate_student_cols(students: list[dict]) -> bool:
         return False
 
     # Define the expected columns for student dictionaries
-    expected_cols = {"student_name", "grade", "gender", "section", "roll_no"}
+    expected_cols = {"name", "grade", "gender", "section", "roll_no"}
     # Get the actual columns from the first student dictionary
     actual_cols = set(students[0].keys())
 

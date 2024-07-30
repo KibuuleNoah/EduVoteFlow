@@ -99,9 +99,9 @@ def create_poll():
     # Get Data
     poll_name, houses = (
         request.form["name"].title(),
-        request.form["houses"],
+        request.form["houses"].title(),
     )
-    posts, year = request.form["posts"], request.form["year"]
+    posts, year = request.form["posts"].title(), request.form["year"]
     # Process Data
     posts_splitted = [x.rstrip() for x in posts.split(",")]
     houses_splitted = [x.rstrip() for x in houses.split(",")]
@@ -127,7 +127,7 @@ def create_poll():
         # Generate Poll Logo Directory
         import os
 
-        path = f"{cur_app.config['APP_PATH']}/{cur_app.config['APP_NAME']}{url_for('static', filename='DataStore')}"
+        path = f"{cur_app.config['APP_PATH']}/{cur_app.config['APP_NAME']}{url_for('static', filename='media')}"
         os.mkdir(f"{path}/{school.abbr}{school.id}/{new_poll.id}")
 
         flash(f"Successfully Created Poll '{poll_name}'", "success")
@@ -223,7 +223,7 @@ def add_students(poll_id):
                 student.get("roll_no", ""),
             )
             username = create_student_username(
-                student.get("student_name", ""),
+                student.get("name", ""),
                 student.get("grade", ""),
                 student.get("section", ""),
             )
@@ -231,7 +231,7 @@ def add_students(poll_id):
             new_student = Student(
                 school_id=school.id,
                 poll_id=poll.id,
-                full_name=student.get("student_name", "").strip().title(),
+                name=student.get("name", "").strip().title(),
                 grade=student.get("grade", ""),
                 section=student.get("section", ""),
                 roll_no=student.get("roll_no", 0),
@@ -252,7 +252,7 @@ def add_students(poll_id):
             students_metadata.append(
                 {
                     "id": student.id,
-                    "full_name": student.full_name,
+                    "name": student.name,
                     "username": student.username,
                     "roll_no": student.roll_no,
                 }
@@ -326,7 +326,6 @@ def edit_flagged_students(poll_id):
         students = [Student.query.get(fd.student_id) for fd in flagged]
         print(usernames)
         for student, username in zip(students, usernames):
-            print(f"RECORD {student.username} -> {username}")
             if len(username) > 5 and student.username != username:
                 student.username = username
                 # db.session.add(record)
@@ -340,16 +339,23 @@ def edit_flagged_students(poll_id):
         db.session.commit()
         if len_flagged == len_edited:
             flash("Successfully Edited All Usernames!", "success")
+            return redirect(
+                url_for(
+                    "polls.dashboard_home",
+                    poll_id=poll_id,
+                )
+            )
+
         else:
             flash(
                 f"Successfully Edited {len_edited}/{len_flagged} Usernames!", "success"
             )
-        return redirect(
-            url_for(
-                "polls.edit_flagged_students",
-                poll_id=poll_id,
+            return redirect(
+                url_for(
+                    "polls.edit_flagged_students",
+                    poll_id=poll_id,
+                )
             )
-        )
 
     flagged_students = []
     for f in flagged:
@@ -408,7 +414,7 @@ def add_candidates(poll_id):
         # Extract the Zip File
         poll_dir = get_schpolldir_path(
             school, poll
-        )  # f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='DataStore')}"
+        )  # f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='media')}"
 
         with zipfile.ZipFile(logoszip_path, "r") as zip_ref:
             zip_ref.extractall(poll_dir)
@@ -418,13 +424,11 @@ def add_candidates(poll_id):
 
         for filepath in glob.iglob(f"{poll_dir}/*.jpg"):
             img_name = os.path.basename(filepath).replace("_", " ")
-            print(img_name)
             candidate = Candidate.query.filter_by(
-                full_name=img_name.split(".")[0].replace("_", " "),
+                name=img_name.split(".")[0].replace("_", " "),
                 poll_id=poll_id,
                 school_id=school.id,
             ).first()
-            print(filepath)
             if candidate:
                 static_path = "/static" + filepath.split("static")[-1]
                 candidate.logo = static_path
@@ -473,7 +477,7 @@ def add_student(poll_id):
     poll = Poll.query.get(poll_id)
 
     username = create_student_username(
-        student.get("student_name", ""),
+        student.get("name", ""),
         student.get("grade", ""),
         student.get("section", ""),
     )
@@ -485,9 +489,9 @@ def add_student(poll_id):
     new_student = Student(
         school_id=school.id,
         poll_id=poll_id,
-        full_name=student.get("student_name", "").strip().title(),
-        grade=student.get("grade", ""),
-        section=student.get("section", ""),
+        name=student.get("name", "").strip().title(),
+        grade=student.get("grade", "").title(),
+        section=student.get("section", "").upper(),
         roll_no=student.get("roll_no", ""),
         gender=get_gender(student.get("gender", "")),
         house=student.get("house", ""),
@@ -498,7 +502,6 @@ def add_student(poll_id):
     student_usernames = [s.username for s in poll.students]
     db.session.add(new_student)
     db.session.commit()
-    print(student_usernames)
     if new_student.username in student_usernames:
         # Add it to the Flagged DB
         flagged_student = FlaggedStudent(
@@ -509,7 +512,7 @@ def add_student(poll_id):
         flash("The Student Your added is flagged first resolve the issue", "danger")
     else:
         created_student_user(new_student, db)
-        flash(f"Added Student {new_student.full_name} successfully", "success")
+        flash(f"Added Student {new_student.name} successfully", "success")
 
     return redirect(url_for("polls.manage_students", poll_id=poll_id))
 
@@ -524,7 +527,7 @@ def delete_student(poll_id, s_id):
     if student:
         db.session.delete(student)
         db.session.commit()
-        flash(f"student {student.full_name} successfully removed", "success")
+        flash(f"student {student.name} successfully removed", "success")
     else:
         flash(f"failed to remove student", "danger")
     return redirect(url_for("polls.manage_students", poll_id=poll_id))
@@ -573,31 +576,26 @@ def add_candidate(poll_id):
     candidate_logo = request.files["logo"]
 
     new_candidate = Candidate(
-        full_name=form["candidate_name"].title(),
+        name=form["name"].title(),
         post=form["post"],
         house=form["house"],
-        grade=form["grade"],
+        grade=form["grade"].title(),
         gender=get_gender(form.get("gender", "")),
-        slogan=form["slogan"],
+        slogan=form["slogan"].title(),
         school_id=school.id,
         poll_id=poll.id,
     )
     db.session.add(new_candidate)
     db.session.commit()
-    # def save_image(school=None,poll=None,student=None,filename):
-    #             if school and poll and student:
-    #                 ...
-    #             elif school and poll:
-    #                 ...
 
     if ext := get_file_extension(candidate_logo.filename):
-        img_name = f"{new_candidate.full_name}-{new_candidate.id}{ext}".replace(
+        img_name = f"{new_candidate.names}-{new_candidate.id}{ext}".replace(
             " ", "_"
         ).lower()
         print("****", img_name, ext)
         static_path = url_for(
             "static",
-            filename=f"DataStore/{school.abbr}{school.id}/{poll_id}/{img_name}",
+            filename=f"media/{school.abbr}{school.id}/{poll_id}/{img_name}",
         )
         print("****", static_path)
         path = f"{os.getcwd()}/EduVoteFlow{static_path}"
@@ -630,7 +628,7 @@ def delete_candidate(poll_id, c_id):
             os.remove(full_path)
         db.session.delete(candidate)
         db.session.commit()
-        flash(f"Candidate {candidate.full_name} successfully removed", "success")
+        flash(f"Candidate {candidate.names} successfully removed", "success")
     else:
         flash(f"failed to remove Candidate", "danger")
     return redirect(url_for("polls.manage_candidates", poll_id=poll_id))
@@ -689,52 +687,6 @@ def delete_poll(poll_id):
     return redirect(url_for("polls.polls_home"))
 
 
-# @polls.route("/<poll_id>/results", methods=["GET", "POST"])
-# @schoolloginrequired
-# @activepollrequired
-# def results(poll_id):
-#     school = current_school
-#     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
-#     if request.method == "POST":
-#         poll.status = "Archived"
-#         all_results = []
-#         for post in poll.posts:
-#             candidates = poll.candidates
-#             votes = [x.votes for x in candidates]
-#             winner = candidates[votes.index(max(votes))]
-#             all_results.append(
-#                 CandidateResult(
-#                     school_id=school.id,
-#                     poll_id=poll_id,
-#                     candidate_id=winner.id,
-#                     votes=winner.votes,
-#                 )
-#             )
-#         db.session.bulk_save_objects(all_results)
-#         db.session.commit()
-#         for winner in CandidateResult.query.filter_by(
-#             school_id=school.id, poll_id=poll_id
-#         ):
-#             print(f"{winner.post} -> {winner.full_name}: {winner.votes}")
-#
-#         # TODO: DELETE candidateS
-#         # TODO: DELETE STUDENTS
-#         return redirect(
-#             url_for(
-#                 "polls.results_page",
-#                 poll_id=poll_id,
-#             )
-#         )
-#
-#     return render_template(
-#         "polldashboard/results.html",
-#         title=poll.name,
-#         school=school,
-#         dash_location="Results",
-#         poll=poll,
-#     )
-
-
 @polls.route("/<poll_id>/results", methods=["GET", "POST"])
 @schoolloginrequired
 def results(poll_id):
@@ -766,43 +718,15 @@ def results(poll_id):
     )
 
 
-@polls.route("/<poll_id>/manage-students", methods=["GET", "POST"])
+@polls.route("/<poll_id>/manage-students")
 @schoolloginrequired
 @active_sched_poll_required
 def manage_students(poll_id):
-    form = AddStudentForm()
     school = current_school
     poll = Poll.query.filter_by(school_id=school.id, id=poll_id).first()
-    students = (
-        poll.students
-    )  # Student.query.filter_by(school=school_abbr, poll=poll_id).all()
-    print(school)
-    houses = ["RUBY", "TOPAZ", "EMERALD", "SAPPHIRE"]
-    if request.method == "POST":
-        gender = request.form["gender"]
-        house = None
-        # if "A2A" == "GH-I2I":
-        #     house = request.form["house"]
-        #     if gender.split("-")[0] == house.split("-")[0]:
-        #         s_id = gender.split("-")[0]
-        #         student = Student.query.filter_by(id=s_id).first()
-        #         student.house = house.split("-")[1]
-        #         student.gender = gender.split("-")[1]
-        #         db.session.commit()
-        #         flash(
-        #             f"Student ('{student.full_name}') updated successfully", "success"
-        #         )
-        # else:
-        #     if gender.split("-")[0]:
-        #         s_id = gender.split("-")[0]
-        #         student = Student.query.filter_by(id=s_id).first()
-        #         # student.house = house.split('-')[1]
-        #         student.gender = gender.split("-")[1]
-        #         db.session.commit()
-        #         flash(
-        #             f"Student ('{student.full_name}') updated successfully", "success"
-        #         )
-    print(students)
+    form = AddStudentForm(house_choices=poll.houses)
+    students = poll.students
+
     return render_template(
         "polldashboard/manage-students.html",
         title="manage-students",
@@ -811,8 +735,6 @@ def manage_students(poll_id):
         school=school,
         form=form,
         dash_location="Manage Students",
-        houses=houses,
-        p_type="A2A",
         p_name=poll.name,
     )
 
@@ -856,13 +778,15 @@ def downloadelectionsummary(poll_id):
     ws.append(["candidate_name", "post", "house", "gender", "votes"])
 
     for candidate in candidates:
-        full_name = candidate.full_name
+        candidate_name = candidate.name
         post = candidate.post.split("-")[2][1:-1]
         house = candidate.house
         gender = candidate.gender
         votes = candidate.votes
 
-        ws.append([full_name, post, "" if house == "ANY" else house, gender, votes])
+        ws.append(
+            [candidate_name, post, "" if house == "ANY" else house, gender, votes]
+        )
 
     file_path = os.path.join(
         cur_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-Summary.xlsx"
@@ -890,11 +814,11 @@ def download_absentee_voters_list(school_abbr, poll_id):
     ws.append(["student_name", "grade", "section"])
 
     for voter in voters:
-        full_name = voter.full_name
+        name = voter.name
         grade = voter.grade
         section = voter.section
 
-        ws.append([full_name, grade, section])
+        ws.append([name, grade, section])
 
     file_path = os.path.join(
         cur_app.config["UPLOAD_FOLDER"], f"Poll-{poll_id}-AbsenteeList.xlsx"

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% block navbar %}{% endblock %}
 {% block content %}
 <div class="modal fade" id="create-poll-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -11,7 +12,7 @@
         </div>
         <div class="modal-body">
           <div class="content">
-            <center><img src="{{url_for('static', filename='DataStore/SchoolLogo/default.svg')}}" alt="" id="logo"></center>
+            <center><img src="{{url_for('static', filename='media/school_logos/default.svg')}}" alt="" id="logo"></center>
 
             <div style="max-width:30rem;">
                

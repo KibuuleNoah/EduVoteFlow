@@ -7,9 +7,8 @@
     <form method="POST" action="" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
       <fieldset class="form-group">
-        <h1 class="display-4 text-center text-info">Welcome Back To EduVoteFlow</h1>
+        <h1 class="display-4 text-center text-info">Welcome Back</h1>
         <h1 class="text-center text-palet">Login</h1>
-        <center><img class="m-2" src="{{url_for('static', filename='DataStore/SchoolLogo/default.svg')}}" alt="" id="logo"></center>
         <br><br>
         <div class="form-group">
           {{ form.admin_username.label(class="form-control-label") }}
@@ -60,7 +59,7 @@
     <script>
         schoolselector = document.getElementById("schoolselector").onclick = function changeLogo(){
             var x = document.getElementById("schoolselector").value;
-            var link = "{{url_for('static', filename='DataStore/SchoolLogo/')}}" + x + ".svg";
+            var link = "{{url_for('static', filename='media/school_logos/')}}" + x + ".svg";
             console.log(link);
             var svgobject = document.getElementById("logo").src = link;
         }

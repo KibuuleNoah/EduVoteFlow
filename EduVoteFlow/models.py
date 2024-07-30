@@ -39,7 +39,7 @@ class School(UserMixin, db.Model):
 class Student(UserMixin, db.Model):
     __tablename__ = "students"
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
     grade = db.Column(db.String, nullable=False)
@@ -55,18 +55,18 @@ class Student(UserMixin, db.Model):
     poll_id = db.Column(db.Integer, db.ForeignKey("polls.id", ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"Student('{self.school_id}', '{self.full_name}')"
+        return f"Student('{self.school_id}', '{self.name}')"
 
 
 class Candidate(db.Model):
     __tablename__ = "candidates"
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String, nullable=False)
+    names = db.Column(db.String, nullable=False)
     post = db.Column(db.String, nullable=False)
     house = db.Column(db.String, nullable=True)
     grade = db.Column(db.String, nullable=False)
     gender = db.Column(db.String, nullable=True)
-    logo = db.Column(db.String, default="/static/DataStore/default.jpg")
+    logo = db.Column(db.String, default="/static/media/default.jpg")
     slogan = db.Column(db.String, nullable=False)
     votes = db.Column(db.Integer, default=0)
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"))
@@ -76,7 +76,7 @@ class Candidate(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "full_name": self.full_name,
+            "name": self.name,
             "post": self.post,
             "house": self.house,
             "gender": self.gender,

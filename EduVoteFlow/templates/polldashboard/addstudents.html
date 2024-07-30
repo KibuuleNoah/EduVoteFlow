@@ -9,45 +9,83 @@
          {{form.students(class='btn btn-outline-info mr-3')}}
          <!-- <span style="color:#0ab2c7">junkkkjk</span> -->
          <!-- <span style="color:#0bc0de">junkkkjk</span> -->
-      <div class="text-warning m-3">
+      <hr />
+      <div class="text-palet m-3">
         Please upload an excel file with the following fields in the sample table below
-        <b> Filed names must in snake casing <i class="text-info">house is optonal and gender must be single CAPITAL letter</i></b>
+        <b> Field names must in be lower case, <i class="text-info"><q>house</q> is optonal</i></b>
       </div>
+      <hr />
       <div class="d-flex justify-content-center overflow-auto">
-        <div style="max-width:40rem;padding-left:1.2rem">
-        <table class="table table-striped table-dark restable">
-          <thead>
-            <tr>
-              <th scope="col">student_name</th>
-              <th scope="col">grade</th>
-              <th scope="col">section</th>
-              <th scope="col">gender</th>
-              <th scope="col">house</th>
-              <th scope="col">roll_no</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for _ in range(3) %}
-            <tr>
-              <td>John Deo</td>
-              <td>11</td>
-              <td>A</td>
-              <td>F</td>
-              <td>RED</td>
-              <td>464</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div style="max-width:40rem;margin-left:5rem;">
+          <table class="table table-striped table-dark restable">
+            <thead>
+              <tr>
+                <th scope="col">name</th>
+                <th scope="col">grade</th>
+                <th scope="col">section</th>
+                <th scope="col">gender</th>
+                <th scope="col">house</th>
+                <th scope="col">roll_no</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Alice Mary</td>
+                <td>A</td>
+                <td>1</td>
+                <td>Female</td>
+                <td>Red</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>Bob Mosh</td>
+                <td>B</td>
+                <td>2</td>
+                <td>Male</td>
+                <td>Blue</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>Charlie Tech</td>
+                <td>C</td>
+                <td>1</td>
+                <td>Male</td>
+                <td>Green</td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td>Diana</td>
+                <td>A</td>
+                <td>2</td>
+                <td>Female</td>
+                <td>Yellow</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>Eve Mia</td>
+                <td>B</td>
+                <td>3</td>
+                <td>Female</td>
+                <td>Red</td>
+                <td>5</td>
+              </tr>
+              <tr>
+                <td colspan="6">
+                  <center>
+                    <a href="{{url_for('static',filename='/samples/students_sample.xlsx')}}" class="btn btn-outline-info"><i class="bx bx-download"></i> Sample Excel</a>
+                  </center>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      </div>
-  
          {{form.submit(class='btn btn-outline-success mt-3')}}
          </center>
    </form>
    {% else %}
          <center>
-            <br><h1 class="display-1 text-success">Students Have Been Added!</h1><br>
+            <br><h1 class="display-1">Students Have Been Added!</h1><br>
          </center>
    {% endif %}
    {% if flagged %}
