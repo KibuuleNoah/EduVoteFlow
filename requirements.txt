@@ -2,7 +2,6 @@
 Flask
 #Flask-Bcrypt
 Flask-Bootstrap
-Flask-Colorpicker
 Flask-Login
 Flask-SQLAlchemy
 Flask-WTF
