@@ -13,13 +13,13 @@ from flask import (
     current_app,
     session,
 )
-from EduVoteFlow.models import School, Poll, Student, Candidate
-from EduVoteFlow.election.forms import StudentLogin
+from application.models import School, Poll, Student, Candidate
+from application.election.forms import StudentLogin
 from flask_login import login_required, current_user
 from sqlalchemy import func
-from EduVoteFlow import db
-from EduVoteFlow.auth.utils import studentloginrequired
-from EduVoteFlow.polls.utils import get_opposed_candidates
+from application import db
+from application.auth.utils import studentloginrequired
+from application.polls.utils import get_opposed_candidates
 from .utils import prepare_candidates
 
 # Register this Page as a Blueprint

@@ -8,12 +8,12 @@ from flask import (
     current_app,
     flash,
 )
-from EduVoteFlow.auth.utils import abbr_str, get_file_extension
-from EduVoteFlow.election.forms import StudentLogin
+from application.auth.utils import abbr_str, get_file_extension
+from application.election.forms import StudentLogin
 
-from EduVoteFlow import db  # , bcrypt
-from EduVoteFlow.models import School, Poll, Student, User
-from EduVoteFlow.auth.forms import SchoolLogin, SchoolRegister
+from application import db  # , bcrypt
+from application.models import School, Poll, Student, User
+from application.auth.forms import SchoolLogin, SchoolRegister
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
@@ -135,7 +135,7 @@ def school_register():
             # Generate Logo Directory
             import os
 
-            path = f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='media')}"
+            path = f"{os.getcwd()}/application{url_for('static', filename='media')}"
             os.mkdir(f"{path}/{school_abbr}{new_school.id}")
 
             flash(

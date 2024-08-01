@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from flask_wtf.csrf import os
 from werkzeug.utils import secure_filename
 
-from EduVoteFlow.models import School, Student
+from application.models import School, Student
 
 
 # makes sure that the loggedin

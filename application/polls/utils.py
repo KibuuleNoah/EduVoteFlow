@@ -3,7 +3,7 @@ from functools import wraps
 from flask_login import current_user
 from flask_wtf.csrf import os
 from sqlalchemy import func
-from EduVoteFlow.models import Candidate, Poll, School, Student, User, db
+from application.models import Candidate, Poll, School, Student, User, db
 from openpyxl import load_workbook
 
 
@@ -492,9 +492,9 @@ def get_schpolldir_path(school: School, poll: Poll, sch_path: bool = False) -> s
 
     # Generate the path based on whether the school path or full path is requested
     if sch_path:
-        path = f"{os.getcwd()}/EduVoteFlow/static/media/{school_dir}"
+        path = f"{os.getcwd()}/application/static/media/{school_dir}"
     else:
-        path = f"{os.getcwd()}/EduVoteFlow/static/media/{school_dir}/{poll_dir}"
+        path = f"{os.getcwd()}/application/static/media/{school_dir}/{poll_dir}"
 
     return path
 

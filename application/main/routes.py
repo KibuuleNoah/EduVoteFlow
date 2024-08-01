@@ -2,8 +2,8 @@
 from flask import jsonify, render_template, request, Blueprint
 from flask_login import login_required
 
-# from EduVoteFlow.models import SchoolUser, Poll
-from EduVoteFlow import db
+# from application.models import SchoolUser, Poll
+from application import db
 
 # Register this Page as a Blueprint
 main = Blueprint("main", __name__)

@@ -1,7 +1,7 @@
 # Imports
 from datetime import datetime
 from flask import current_app
-from EduVoteFlow import db, login_manager
+from application import db, login_manager
 from flask_login import UserMixin
 
 

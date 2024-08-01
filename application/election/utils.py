@@ -1,4 +1,4 @@
-from EduVoteFlow.models import Candidate
+from application.models import Candidate
 
 
 def prepare_candidates(candidates: list[Candidate]) -> dict:

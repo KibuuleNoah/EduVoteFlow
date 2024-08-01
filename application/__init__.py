@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 # from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from EduVoteFlow.config import Config
+from application.config import Config
 
 # Initialize Modules
 db = SQLAlchemy()
@@ -22,10 +22,10 @@ def create_app(config_class=Config):
     db.init_app(app)
     # bcrypt.init_app(app)
     login_manager.init_app(app)
-    from EduVoteFlow.main.routes import main
-    from EduVoteFlow.auth.routes import auth
-    from EduVoteFlow.polls.routes import polls
-    from EduVoteFlow.election.routes import election
+    from application.main.routes import main
+    from application.auth.routes import auth
+    from application.polls.routes import polls
+    from application.election.routes import election
 
     app.register_blueprint(main, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/auth")

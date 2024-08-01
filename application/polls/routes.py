@@ -14,10 +14,10 @@ from flask import (
 from flask import current_app as cur_app
 from flask_wtf.csrf import os
 import openpyxl
-from EduVoteFlow.auth.utils import get_file_extension, schoolloginrequired
-from EduVoteFlow.election.routes import activepollrequired
-from EduVoteFlow.election.utils import prepare_candidates
-from EduVoteFlow.models import (
+from application.auth.utils import get_file_extension, schoolloginrequired
+from application.election.routes import activepollrequired
+from application.election.utils import prepare_candidates
+from application.models import (
     School,
     Poll,
     Student,
@@ -26,8 +26,8 @@ from EduVoteFlow.models import (
     User,
 )
 from flask_login import login_required, current_user as current_school
-from EduVoteFlow import db
-from EduVoteFlow.polls.forms import (
+from application import db
+from application.polls.forms import (
     CreatePollForm,
     AddStudentsForm,
     AddCandidatesForm,
@@ -414,7 +414,7 @@ def add_candidates(poll_id):
         # Extract the Zip File
         poll_dir = get_schpolldir_path(
             school, poll
-        )  # f"{os.getcwd()}/EduVoteFlow{url_for('static', filename='media')}"
+        )  # f"{os.getcwd()}/application{url_for('static', filename='media')}"
 
         with zipfile.ZipFile(logoszip_path, "r") as zip_ref:
             zip_ref.extractall(poll_dir)
@@ -598,7 +598,7 @@ def add_candidate(poll_id):
             filename=f"media/{school.abbr}{school.id}/{poll_id}/{img_name}",
         )
         print("****", static_path)
-        path = f"{os.getcwd()}/EduVoteFlow{static_path}"
+        path = f"{os.getcwd()}/application{static_path}"
         print("****", path)
 
         candidate_logo.save(path)
