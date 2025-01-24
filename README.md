@@ -31,12 +31,4 @@ A Flask based Voting Platform built specifically for school, college and minor i
 
 ## The Future
 
-This project was a big success and after that I moved onto something else. However, I do plan on Creating a Version 2 of Voteflow which will have even more options and will be secure enough to be used in more widespread usecases. That will not be opensource and will have a radically different tech stack to account for enterprise use.
-
-## Outcome
-
-I used Voteflow to run my School Cabinet Election for the year 2019. It was a massive success. Completely Flawless and as a result, I was felicitated by my School **St Paul's English School, Bangalore**.
-
-# Here is the Felicitation Certificate
-
-![](https://github.com/synapsecode/EduVoteFlow/blob/main/ExampleVotingData/felit.jpg)
+This project was a big success and after that I moved onto something else. However, I do plan on Creating a Version 2 of EduVoteflow which will have even more options and will be secure enough to be used in more widespread usecases. That will not be opensource and will have a radically different tech stack to account for enterprise use.
